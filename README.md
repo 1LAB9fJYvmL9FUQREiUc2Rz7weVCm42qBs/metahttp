@@ -1,7 +1,7 @@
 # metahttp
 A layer above Linux tools that deal with the HTTP(S) protocol
 
-##Installation
+## Installation
 - Install docker<br/>
 - Clone this repository<br/>
 - Build the docker image from the Dockerfile<br/>
@@ -12,8 +12,8 @@ A layer above Linux tools that deal with the HTTP(S) protocol
     tcp        0      0 127.0.0.1:50774         0.0.0.0:*               LISTEN      588215/docker-proxy  
     udp        0      0 127.0.0.1:50774         0.0.0.0:*                           588238/docker-proxy  
 
-##Metahttp usage
-###metahttp.xml files
+## Metahttp usage
+### metahttp.xml files
 The metahttp.xml files are the basis of an HTTP session. Requests are derived from the metadata contained.<br/>
 ### GET request example
 As a first simple example we create a _GET_ request against _http://www.eff.org_ <br/>
@@ -62,16 +62,16 @@ For now, we just copy and paste the wget command and its arguments (the 11 lines
     $'https://www.eff.org/' \
  
 ... and we receive the HTTP response, similar to the following:
---2020-05-22 15:13:33--  https://www.eff.org/
-Resolving www.eff.org (www.eff.org)... 151.101.112.201, 2a04:4e42:1b::201
-Connecting to www.eff.org (www.eff.org)|151.101.112.201|:443... connected.
-HTTP request sent, awaiting response... 
-  HTTP/1.1 200 OK
-  Connection: keep-alive
-  Content-Length: 55046
-  Server: nginx
-  Content-Type: text/html; charset=utf-8
-  (_... the whole raw HTTP response following here..._)
+--2020-05-22 15:13:33--  https://www.eff.org/  
+Resolving www.eff.org (www.eff.org)... 151.101.112.201, 2a04:4e42:1b::201  
+Connecting to www.eff.org (www.eff.org)|151.101.112.201|:443... connected.  
+HTTP request sent, awaiting response...  
+  HTTP/1.1 200 OK  
+  Connection: keep-alive  
+  Content-Length: 55046  
+  Server: nginx  
+  Content-Type: text/html; charset=utf-8  
+  (_... the whole raw HTTP response following here..._)  
 
 
 ### POST request example
@@ -95,9 +95,9 @@ meta/duckduckgo.metahttp.xml:<br/>
     </session>  
     
 
-Now, in order to _compile_ this meta data to a bash script, run the following command (requires _nc_ or _ncat_ on your system, _telnet_ will do too):<br/>
+Again, we _compile_ this metadata, this time redirecting the output to a bash script:<br/>
 `cat meta/duckduckgo.metahttp.xml | nc localhost 50774 >duckduckgo.sh`<br/>
-This will result in the following bash script which you can make executable by issuing `chmod +x duckduckgo.sh`:<br/>
+This will result in the following file which you can make executable by issuing `chmod +x duckduckgo.sh`:<br/>
 
     #!/bin/bash  
     rm -f cookies.txt; touch cookies.txt  
