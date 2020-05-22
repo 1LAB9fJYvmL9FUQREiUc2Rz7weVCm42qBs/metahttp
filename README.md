@@ -1,7 +1,7 @@
-### metahttp
+## metahttp
 A layer above Linux tools that deal with the HTTP(S) protocol
 
-##Installation <br/>
+#Installation <br/>
 - Install docker<br/>
 - Clone this repository<br/>
 - Build the docker image from the Dockerfile<br/>
@@ -16,6 +16,62 @@ A layer above Linux tools that deal with the HTTP(S) protocol
 - metahttp.xml files:<br/>
 - As a first simple example we create a _GET_ request against _http://www.eff.org_ <br/>
 <br/>
+meta/eff.org.metahttp.xml:  
+
+    <session newcookies="true" baseurl="https://www.eff.org" stdout="-">
+      <req tool="wget" verbose="false">
+        <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+        <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+        <form method="GET" action="/" enctype="application/x-www-form-urlencoded"/>
+      </req>
+    </session>
+
+Now, in order to _compile_ this meta data to bash instructions, run the following command (requires _nc_ or _ncat_ on your system, _telnet_ will do too):<br/>
+`cat meta/eff.org.metahttp.xml | nc localhost 50774`  
+which will generate the following output:  
+
+    #!/bin/bash
+    rm -f cookies.txt; touch cookies.txt
+    echo ------------------------------------------------------------ wget GET 'https://www.eff.org/' : 
+    wget \
+    --server-response \
+    --output-document - 2>&1 \
+    --header 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
+    --header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+    --load-cookies cookies.txt \
+    --save-cookies cookies.txt --keep-session-cookies \
+    --no-check-certificate \
+    --header 'Host: www.eff.org' \
+    --header 'Content-Type: application/x-www-form-urlencoded' \
+    $'https://www.eff.org/' \
+
+For now, we just copy and paste the wget command and its arguments (the 11 lines following wget) in order to kick off the HTTP request:
+
+    wget \
+    --server-response \
+    --output-document - 2>&1 \
+    --header 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
+    --header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+    --load-cookies cookies.txt \
+    --save-cookies cookies.txt --keep-session-cookies \
+    --no-check-certificate \
+    --header 'Host: www.eff.org' \
+    --header 'Content-Type: application/x-www-form-urlencoded' \
+    $'https://www.eff.org/' \
+ 
+... and we receive the HTTP response, similar to the following:
+--2020-05-22 15:13:33--  https://www.eff.org/
+Resolving www.eff.org (www.eff.org)... 151.101.112.201, 2a04:4e42:1b::201
+Connecting to www.eff.org (www.eff.org)|151.101.112.201|:443... connected.
+HTTP request sent, awaiting response... 
+  HTTP/1.1 200 OK
+  Connection: keep-alive
+  Content-Length: 55046
+  Server: nginx
+  Content-Type: text/html; charset=utf-8
+  (_... the whole raw HTTP response following here..._)
+
+
 - As a first example for a _POST_ request we chose the search platform _duckduckgo.com_, as it allows for a straightforward search without a lot of background noise:<br/>
 meta/duckduckgo.metahttp.xml:<br/>
 
