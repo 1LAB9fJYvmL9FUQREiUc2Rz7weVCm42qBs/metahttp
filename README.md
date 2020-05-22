@@ -1,6 +1,7 @@
 # metahttp
 A layer above Linux tools that deal with the HTTP(S) protocol
 
+Installation
 - Install docker  
 - Clone this repository  
 - Build the docker image from the Dockerfile  
@@ -14,7 +15,7 @@ Metahttp usage:
  
 - As a first example for a *POST* request we chose the search platform _duckduckgo.com_, as it allows for a straightforward search without a lot of background noise:
 meta/duckduckgo.metahttp.xml:
-`<session newcookies="true" baseurl="https://duckduckgo.com" proxy="http://127.0.0.1:8080" stdout="-">
+`<session newcookies="true" baseurl="https://duckduckgo.com" proxy="http://127.0.0.1:8080" stdout="-">\
     <req tool="curl" protocol="http/1.1" verbose="false" useproxy="true">
         <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
         <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
