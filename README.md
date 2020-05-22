@@ -1,7 +1,7 @@
-## metahttp
+# metahttp
 A layer above Linux tools that deal with the HTTP(S) protocol
 
-#Installation <br/>
+##Installation
 - Install docker<br/>
 - Clone this repository<br/>
 - Build the docker image from the Dockerfile<br/>
@@ -12,9 +12,11 @@ A layer above Linux tools that deal with the HTTP(S) protocol
     tcp        0      0 127.0.0.1:50774         0.0.0.0:*               LISTEN      588215/docker-proxy  
     udp        0      0 127.0.0.1:50774         0.0.0.0:*                           588238/docker-proxy  
 
-#Metahttp usage: <br/>
-- metahttp.xml files:<br/>
-- As a first simple example we create a _GET_ request against _http://www.eff.org_ <br/>
+##Metahttp usage
+###metahttp.xml files
+The metahttp.xml files are the basis of an HTTP session. Requests are derived from the metadata contained.<br/>
+### GET request example
+As a first simple example we create a _GET_ request against _http://www.eff.org_ <br/>
 <br/>
 meta/eff.org.metahttp.xml:  
 
@@ -72,7 +74,8 @@ HTTP request sent, awaiting response...
   (_... the whole raw HTTP response following here..._)
 
 
-- As a first example for a _POST_ request we chose the search platform _duckduckgo.com_, as it allows for a straightforward search without a lot of background noise:<br/>
+### POST request example
+As a first example for a _POST_ request we chose the search platform _duckduckgo.com_, as it allows for a straightforward search without a lot of background noise:<br/>
 meta/duckduckgo.metahttp.xml:<br/>
 
     <session newcookies="true" baseurl="https://duckduckgo.com" proxy="http://127.0.0.1:8080" stdout="-">  
@@ -92,31 +95,32 @@ meta/duckduckgo.metahttp.xml:<br/>
     </session>  
     
 
-- Now, in order to _compile_ this meta data to a bash script, run the following command (requires _nc_ or _ncat_ on your system, _telnet_ will do too):<br/>
+Now, in order to _compile_ this meta data to a bash script, run the following command (requires _nc_ or _ncat_ on your system, _telnet_ will do too):<br/>
 `cat meta/duckduckgo.metahttp.xml | nc localhost 50774 >duckduckgo.sh`<br/>
 This will result in the following bash script which you can make executable by issuing `chmod +x duckduckgo.sh`:<br/>
 
     #!/bin/bash  
     rm -f cookies.txt; touch cookies.txt  
     echo ------------------------------------------------------------ curl POST 'https://duckduckgo.com/html' :  
-    curl  
-    --proxy http://127.0.0.1:8080  
-    --include  
-    --request POST  
-    --http1.1  
-    --header 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0'  
-    --header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'  
-    --header 'Accept-Language: en-US,en;q=0.5'  
-    --header 'Accept-Encoding: gzip, deflate'  
-    --header 'Referer: https://duckduckgo.com/'  
-    --header 'Connection: close'  
-    --header 'Pragma: no-cache'  
-    --header 'Cache-Control: no-cache'  
-    --cookie cookies.txt  
-    --cookie-jar cookies.txt  
-    --ssl-no-revoke --insecure  
-    --header 'Host: duckduckgo.com'  
-    --header 'Content-Type: application/x-www-form-urlencoded'  
-    --data-binary $'q=black+vyper'  
-    $'https://duckduckgo.com/html'  
+    curl \
+    --proxy http://127.0.0.1:8080 \
+    --include \
+    --request POST \
+    --http1.1 \
+    --header 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
+    --header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+    --header 'Accept-Language: en-US,en;q=0.5' \
+    --header 'Accept-Encoding: gzip, deflate' \
+    --header 'Referer: https://duckduckgo.com/' \
+    --header 'Connection: close' \
+    --header 'Pragma: no-cache' \
+    --header 'Cache-Control: no-cache' \
+    --cookie cookies.txt \
+    --cookie-jar cookies.txt \
+    --ssl-no-revoke --insecure \
+    --header 'Host: duckduckgo.com' \
+    --header 'Content-Type: application/x-www-form-urlencoded' \
+    --data-binary $'q=black+vyper' \
+    $'https://duckduckgo.com/html' \
+
 
