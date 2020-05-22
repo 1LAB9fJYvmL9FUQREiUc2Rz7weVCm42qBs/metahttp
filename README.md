@@ -1,19 +1,20 @@
-# metahttp
+## metahttp
 A layer above Linux tools that deal with the HTTP(S) protocol
 
-Installation<br/>
+#Installation<br/>
 - Install docker<br/>
 - Clone this repository<br/>
 - Build the docker image from the Dockerfile<br/>
 - Run a container from the image<br/>
 - As a sanity check, see if your localhost now exposes ports 50774/tcp and 50774/udp:<br/>
 <br/>
-Metahttp usage:<br/>
+#Metahttp usage:<br/>
 - metahttp.xml files:<br/>
-- As a first simple example we create a *GET* request against _http://www.eff.org_:<br/>
+- As a first simple example we create a _GET_ request against _http://www.eff.org_ <br/>
 <br/>
-- As a first example for a *POST* request we chose the search platform _duckduckgo.com_, as it allows for a straightforward search without a lot of background noise:<br/>
+- As a first example for a _POST_ request we chose the search platform _duckduckgo.com_, as it allows for a straightforward search without a lot of background noise:<br/>
 meta/duckduckgo.metahttp.xml:<br/>
+
     <session newcookies="true" baseurl="https://duckduckgo.com" proxy="http://127.0.0.1:8080" stdout="-">  
       <req tool="curl" protocol="http/1.1" verbose="false" useproxy="true">  
         <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>  
@@ -29,6 +30,7 @@ meta/duckduckgo.metahttp.xml:<br/>
         </form>  
       </req>  
     </session>  
+    
 
 - Now, in order to _compile_ this meta data to a bash script, run the following command (requires _nc_ or _ncat_ on your system, _telnet_ will do too):<br/>
 `cat meta/duckduckgo.metahttp.xml | nc localhost 50774 >duckduckgo.sh`<br/>
