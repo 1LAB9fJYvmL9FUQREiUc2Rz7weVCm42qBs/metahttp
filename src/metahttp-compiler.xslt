@@ -21,7 +21,7 @@
     <xsl:template match="/session" priority="2">
         <xsl:value-of select="concat('#!/bin/bash',$lf)"/>
         <xsl:if test="not(@newcookies=('false','no','off','0'))">
-            <xsl:value-of select="concat('[[ -e ',$cookiefile,' ]] ',$amp,$amp,' rm -f ',$cookiefile,'; touch ',$cookiefile,$lf)"/>
+            <xsl:value-of select="concat('rm -f ',$cookiefile,'; touch ',$cookiefile,$lf)"/>
         </xsl:if>
         <xsl:apply-templates select="req"/>
     </xsl:template>
