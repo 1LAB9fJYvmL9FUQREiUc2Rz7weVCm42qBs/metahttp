@@ -1,14 +1,18 @@
-## metahttp
+### metahttp
 A layer above Linux tools that deal with the HTTP(S) protocol
 
-#Installation<br/>
+##Installation <br/>
 - Install docker<br/>
 - Clone this repository<br/>
 - Build the docker image from the Dockerfile<br/>
 - Run a container from the image<br/>
 - As a sanity check, see if your localhost now exposes ports 50774/tcp and 50774/udp:<br/>
-<br/>
-#Metahttp usage:<br/>
+
+    #netstat -antup | grep 50774  
+    tcp        0      0 127.0.0.1:50774         0.0.0.0:*               LISTEN      588215/docker-proxy  
+    udp        0      0 127.0.0.1:50774         0.0.0.0:*                           588238/docker-proxy  
+
+#Metahttp usage: <br/>
 - metahttp.xml files:<br/>
 - As a first simple example we create a _GET_ request against _http://www.eff.org_ <br/>
 <br/>
