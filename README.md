@@ -61,8 +61,8 @@ For now, we just copy and paste the wget command and its arguments (the 11 lines
     --header 'Content-Type: application/x-www-form-urlencoded' \
     $'https://www.eff.org/' \
  
-... and we receive the HTTP response, similar to the following:
---2020-05-22 15:13:33--  https://www.eff.org/  
+... and we receive the HTTP response, similar to the following:<br/>
+<sub>--2020-05-22 15:13:33--  https://www.eff.org/  
 Resolving www.eff.org (www.eff.org)... 151.101.112.201, 2a04:4e42:1b::201  
 Connecting to www.eff.org (www.eff.org)|151.101.112.201|:443... connected.  
 HTTP request sent, awaiting response...  
@@ -70,7 +70,7 @@ HTTP request sent, awaiting response...
   Connection: keep-alive  
   Content-Length: 55046  
   Server: nginx  
-  Content-Type: text/html; charset=utf-8  
+  Content-Type: text/html; charset=utf-8</sub>  
   (_... the whole raw HTTP response following here..._)  
 
 
@@ -78,51 +78,47 @@ HTTP request sent, awaiting response...
 As a first example for a _POST_ request we chose the search platform _duckduckgo.com_, as it allows for a straightforward search without a lot of background noise:<br/>
 meta/duckduckgo.metahttp.xml:<br/>
 
-    <session newcookies="true" baseurl="https://duckduckgo.com" proxy="http://127.0.0.1:8080" stdout="-">  
-      <req tool="curl" protocol="http/1.1" verbose="false" useproxy="true">  
-        <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>  
-        <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>  
-        <header name="Accept-Language" value="en-US,en;q=0.5"/>  
-        <header name="Accept-Encoding" value="gzip, deflate"/>  
-        <header name="Referer" value="https://duckduckgo.com/"/>  
-        <header name="Connection" value="close"/>  
-        <header name="Pragma" value="no-cache"/>  
-        <header name="Cache-Control" value="no-cache"/>  
-        <form method="POST" action="/html" enctype="application/x-www-form-urlencoded">  
-          <input name="q" value="black vyper"/>  
-        </form>  
-      </req>  
-    </session>  
-    
+    <session newcookies="true" baseurl="https://duckduckgo.com" stdout="-">
+      <req tool="curl" protocol="http/1.1" verbose="false">
+        <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+        <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+        <header name="Accept-Language" value="en-US,en;q=0.5"/>
+        <header name="Referer" value="https://duckduckgo.com/"/>
+        <header name="Connection" value="close"/>
+        <header name="Pragma" value="no-cache"/>
+        <header name="Cache-Control" value="no-cache"/>
+        <form method="POST" action="/html" enctype="application/x-www-form-urlencoded">
+            <input name="q" value="wfuzz session" urlencode="false"/>
+        </form>
+      </req>
+    </session>
 
 Again, we _compile_ this metadata, this time redirecting the output to a bash script:<br/>
 `cat meta/duckduckgo.metahttp.xml | nc localhost 50774 >duckduckgo.sh`<br/>
 This will result in the following file which you can make executable by issuing `chmod +x duckduckgo.sh`:<br/>
 
-    #!/bin/bash  
-    rm -f cookies.txt; touch cookies.txt  
-    echo ------------------------------------------------------------ curl POST 'https://duckduckgo.com/html' :  
+    #!/bin/bash
+    rm -f cookies.txt; touch cookies.txt
+    echo ------------------------------------------------------------ curl POST 'https://duckduckgo.com/html' : 
     curl \
-    --proxy http://127.0.0.1:8080 \
     --include \
     --request POST \
     --http1.1 \
     --header 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
     --header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
     --header 'Accept-Language: en-US,en;q=0.5' \
-    --header 'Accept-Encoding: gzip, deflate' \
     --header 'Referer: https://duckduckgo.com/' \
     --header 'Connection: close' \
     --header 'Pragma: no-cache' \
     --header 'Cache-Control: no-cache' \
     --cookie cookies.txt \
     --cookie-jar cookies.txt \
-    --ssl-no-revoke --insecure \
     --header 'Host: duckduckgo.com' \
     --header 'Content-Type: application/x-www-form-urlencoded' \
-    --data-binary $'q=black+vyper' \
+    --data-binary $'q=wfuzz session' \
     $'https://duckduckgo.com/html' \
-
+    
+Again, when you run the bash script, you will see the complete HTTP response in your terminal.<br/>
 
 ### Proxied Requests
 As pen testers, we like to use a proxy in order to position ourselves as MITM (man in the middle). This helps us analyze/repeat/modify requests in detail.<br/>
