@@ -49,7 +49,8 @@
         <xsl:variable name="url"><xsl:call-template name="action"><xsl:with-param name="formaction" select="form[1]/@action"/></xsl:call-template></xsl:variable>
 	<xsl:value-of select="string-join(('echo ------------------------------------------------------------',$tool,$verb,concat($sq,$url,$sq),':',$lf),' ')"/>
         <xsl:if test="@confirm=('true','yes','on','1')"><xsl:call-template name="confirm"><xsl:with-param name="action" select="$tool"/></xsl:call-template></xsl:if>
-        <xsl:value-of select="concat('http_proxy=',/session/@proxy,' https_proxy=',/session/@proxy,' ') [current()/@useproxy='true'  and  $tool='wget']"/>
+        <xsl:value-of select="concat('http_proxy=',/session/@proxy,' ')     [current()/@useproxy=('true','yes','on','1')  and  not(starts-with($url,'https'))  and  $tool='wget']"/>
+        <xsl:value-of select="concat('https_proxy=',/session/@proxy,' ')    [current()/@useproxy=('true','yes','on','1')  and      starts-with($url,'https')   and  $tool='wget']"/>
 	<xsl:value-of select="concat($commandprefix,$tool,concat('_',@toolversion)[current()/attribute::toolversion],' \',$lf)"/>
         <xsl:apply-templates select="@useproxy"><xsl:with-param name="tool" select="$tool"/></xsl:apply-templates>
         <xsl:value-of select="
@@ -155,8 +156,8 @@
             concat('--',$securityprotocol,' \',$lf)                                        [$securityprotocol!=''  and  $tool='curl']
             ,concat('--tls-max ',$version_up,$version_separator,$version_low,' \',$lf)     [$securityprotocol!=''  and  $tool='curl']
             ,concat('--secure-protocol=',$securityprotocol,' \',$lf)                       [$securityprotocol!=''  and  $tool='wget']
-            ,concat('--ssl-no-revoke --insecure',' \',$lf)                                 [$tool='curl']
-            ,concat('--no-check-certificate',' \',$lf)                                     [$tool='wget']
+            ,concat('--ssl-no-revoke --insecure',' \',$lf)                                 [current()/@insecure=('true','yes','on','1')  and  $tool='curl']
+            ,concat('--no-check-certificate',' \',$lf)                                     [current()/@insecure=('true','yes','on','1')  and  $tool='wget']
         "/>
     </xsl:template>
 
