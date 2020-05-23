@@ -124,3 +124,56 @@ This will result in the following file which you can make executable by issuing 
     $'https://duckduckgo.com/html' \
 
 
+### Proxied Requests
+As pen testers, we like to use a proxy in order to position ourselves as MITM (man in the middle). This helps us analyze/repeat/modify requests in detail.<br/>
+Our next request (_duckduckgo.proxy.metahttp.xml_) will utilize a Burpsuite proxy on localhost port 8080:<br/>
+
+    <session newcookies="true" baseurl="https://duckduckgo.com" proxy="http://127.0.0.1:8080" stdout="-">
+      <req tool="curl" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
+        <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+        <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+        <header name="Accept-Language" value="en-US,en;q=0.5"/>
+        <header name="Accept-Encoding" value="gzip, deflate"/>
+        <header name="Referer" value="https://duckduckgo.com/"/>
+        <header name="Connection" value="close"/>
+        <header name="Pragma" value="no-cache"/>
+        <header name="Cache-Control" value="no-cache"/>
+        <form method="POST" action="/html" enctype="application/x-www-form-urlencoded">
+            <input name="q" value="wfuzz session"/>
+        </form>
+      </req>
+    </session>
+
+We transform the XML and save the output to file duckduckgo.proxy.sh<br/>
+`cat meta/duckduckgo.proxy.metahttp.xml | nc localhost 50774 >duckduckgo.proxy.sh`<br/>
+The contents of _duckduckgo.proxy.sh_ are:<br/>
+
+    #!/bin/bash
+    rm -f cookies.txt; touch cookies.txt
+    echo ------------------------------------------------------------ curl POST 'https://duckduckgo.com/html' : 
+    curl \
+    --proxy http://127.0.0.1:8080 \
+    --include \
+    --request POST \
+    --http1.1 \
+    --header 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
+    --header 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+    --header 'Accept-Language: en-US,en;q=0.5' \
+    --header 'Accept-Encoding: gzip, deflate' \
+    --header 'Referer: https://duckduckgo.com/' \
+    --header 'Connection: close' \
+    --header 'Pragma: no-cache' \
+    --header 'Cache-Control: no-cache' \
+    --cookie cookies.txt \
+    --cookie-jar cookies.txt \
+    --ssl-no-revoke --insecure \
+    --header 'Host: duckduckgo.com' \
+    --header 'Content-Type: application/x-www-form-urlencoded' \
+    --data-binary $'q=wfuzz%20session' \
+    $'https://duckduckgo.com/html' \
+
+
+We make the file executable and run it: `chmod +x duckduckgo.proxy.sh && ./duckduckgo.proxy.sh`<br/>
+... which results in the output of the HTTP response - not only in our terminal, but also in Burpsuite proxy.<br/>
+We can even conveniently view the rendered web page on the proxy's response tab:<br/>
+![BurpSuite Proxy](/burp-proxy-rendered-response1.png)
