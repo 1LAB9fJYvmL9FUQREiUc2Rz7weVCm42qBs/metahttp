@@ -12,6 +12,7 @@
     <xsl:param name="crlf" select="concat($cr,$lf)"/>
     <xsl:param name="re">^(https?://)?([^/]+)?(/[^\?]*)(\?*.*)$</xsl:param>
     <xsl:param name="cookiefile">cookies.txt</xsl:param>
+    <xsl:param name="wfpayload">wfpayload.py</xsl:param>
     <xsl:param name="boundary">A-----------------------------------affe</xsl:param>
 
     <xsl:template match="/session[not(child::req[@tool!='raw'])]" priority="3">
@@ -21,7 +22,10 @@
     <xsl:template match="/session" priority="2">
         <xsl:value-of select="concat('#!/bin/bash',$lf)"/>
         <xsl:if test="not(@newcookies=('false','no','off','0'))">
-            <xsl:value-of select="concat('rm -f ',$cookiefile,'; touch ',$cookiefile,$lf)"/>
+        <xsl:value-of select="
+            concat('rm -f ',$cookiefile,'; touch ',$cookiefile,$lf)		[current()/child::req[@tool=('curl','wget')]]
+            ,concat('rm -f ','WFUZZP?',$lf)					[current()/child::req[@tool=('wfuzz')]]
+        "/>
         </xsl:if>
         <xsl:apply-templates select="req"/>
     </xsl:template>
@@ -241,8 +245,22 @@
                 ,@encoder               [current()/attribute::encoder]
             "/>
             <xsl:value-of select="'-z '"/>
-            <xsl:value-of select="concat($sq,string-join($switches,','),$sq)"/>
-            <xsl:value-of select="concat(' --slice &quot;',@slice,'&quot;')    [current()/attribute::slice]"/>	<!-- slice code can contain single quotes -->
+            <xsl:choose>
+                <xsl:when test="@type='wfuzzp'  and  attribute::field">
+                    <xsl:value-of select="concat('file,`f=$(mktemp); ',$wfpayload,' -z ')"/>		<!-- backticks -->
+                    <xsl:value-of select="concat($sq,@type,',',@fn,$sq)"/>
+                    <xsl:value-of select="concat(' --field &quot;',@field,'&quot;')"/>
+                    <xsl:value-of select="' | grep -vE &quot;^$|^Warning:&quot;'"/>
+                    <xsl:value-of select="concat(' | ',@decoder,' --decode')[current()/attribute::decoder]"/>
+                    <xsl:value-of select="'>$f; echo -n $f`'"/>						<!-- /backticks -->
+                    <xsl:value-of select="concat(','[current()/attribute::encoder],@encoder)"/>
+                    <xsl:value-of select="concat(' --slice &quot;',@slice,'&quot;')    [current()/attribute::slice]"/>	<!-- slice code can contain single quotes -->
+                </xsl:when>
+                <xsl:otherwise>
+                    <xsl:value-of select="concat($sq,string-join($switches,','),$sq)"/>
+                    <xsl:value-of select="concat(' --slice &quot;',@slice,'&quot;')    [current()/attribute::slice]"/>	<!-- slice code can contain single quotes -->
+                </xsl:otherwise>
+            </xsl:choose>
             <xsl:value-of select="concat(' -m ',@iterator)    [current()/attribute::iterator  and  current()/preceding-sibling::payload]"/>
             <xsl:value-of select="concat(' \',$lf)"/>
         </xsl:if>
