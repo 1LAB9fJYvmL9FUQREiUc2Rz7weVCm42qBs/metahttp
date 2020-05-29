@@ -1,0 +1,61 @@
+<session newcookies="true" baseurl="https://www.hackthebox.eu" proxy="http://127.0.0.1:8080" stdout="-">
+    <req tool="wfuzz" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
+        <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+        <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+        <header name="Accept-Language" value="en-US,en;q=0.5"/>
+        <header name="Pragma" value="no-cache"/>
+        <header name="Cache-Control" value="no-cache"/>
+	<payload type="list" fn="GET"/>
+	<form method="FUZZ" action="/invite" enctype="application/x-www-form-urlencoded"/>
+    </req>
+    <req tool="wfuzz" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
+        <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+        <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+        <header name="Accept-Language" value="en-US,en;q=0.5"/>
+        <header name="Referer" value="https://www.hackthebox.eu/"/>
+        <header name="Pragma" value="no-cache"/>
+        <header name="Cache-Control" value="no-cache"/>
+	<payload type="wfuzzp" fn="WFUZZP1" description="FUZZ: read results of the 1st request"/>
+	<cookie name="__cfduid" value="FUZZ[r.cookies.response.__cfduid]"/>
+	<cookie name="hackthebox_session" value="FUZZ[r.cookies.response.hackthebox_session]"/>
+	<cookie name="XSRF-TOKEN" value="FUZZ[r.cookies.response.XSRF-TOKEN]"/>
+        <form method="POST" action="/api/invite/generate" enctype="application/x-www-form-urlencoded">
+        </form>
+    </req>
+    <req tool="wfuzz" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
+        <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+        <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+        <header name="Accept-Language" value="en-US,en;q=0.5"/>
+        <header name="Accept-Encoding" value="gzip, deflate"/>
+        <header name="Referer" value="https://www.hackthebox.eu/"/>
+        <header name="Connection" value="close"/>
+        <header name="Pragma" value="no-cache"/>
+        <header name="Cache-Control" value="no-cache"/>
+	<payload type="wfuzzp" fn="WFUZZP1" description="FUZZ: read results of the 1st request"/>
+	<cookie name="__cfduid" value="FUZZ[r.cookies.response.__cfduid]"/>
+	<cookie name="hackthebox_session" value="FUZZ[r.cookies.response.hackthebox_session]"/>
+	<cookie name="XSRF-TOKEN" value="FUZZ[r.cookies.response.XSRF-TOKEN]"/>
+        <!--<payload type="wfuzzp" fn="WFUZZP1" field="history.content|gregex('.*name=.csrf-token. content=.([^>]*).>.*')"/>--> 
+	<payload type="wfuzzp" fn="WFUZZP1" field="history.content|gregex('.*input [^>]*name=._token. [^>]*value=.([^>]+).>.*')"/> 
+	<!-- Note: payload 'decoder' attribute only supported with wfuzzp payload and existing 'field' attribute" --> 
+	<payload type="wfuzzp" fn="WFUZZP2" field="history.content|gregex('.*.code.:.([^,]*).,.*')" decoder="base64" description="FUZZ: read results of the 2nd request"/>
+	<!--<extraswitch name="- -dry-run" value=""/>-->
+        <form method="POST" action="/invite" enctype="application/x-www-form-urlencoded">
+		<input name="_token" value="FUZ2Z"/> 
+		<input name="code" value="FUZ3Z"/> 
+        </form>
+    </req>
+    <req tool="wfuzz" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
+        <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+        <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+        <header name="Accept-Language" value="en-US,en;q=0.5"/>
+        <header name="Referer" value="https://www.hackthebox.eu/invite"/>
+        <header name="Pragma" value="no-cache"/>
+        <header name="Cache-Control" value="no-cache"/>
+	<payload type="wfuzzp" fn="WFUZZP3" description="FUZZ: read results of the 3rd request"/>
+	<cookie name="hackthebox_session" value="FUZZ[r.cookies.response.hackthebox_session]"/>
+	<cookie name="XSRF-TOKEN" value="FUZZ[r.cookies.response.XSRF-TOKEN]"/>
+	<form method="GET" action="/register" enctype="application/x-www-form-urlencoded">
+        </form>
+    </req>
+</session>

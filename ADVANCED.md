@@ -318,4 +318,359 @@ Let's compile it: `cat meta/hackthebox.metahttp.xml | nc localhost 50774`<br/>
     </html>
 
 You might not notice right away, but the fact that we received a redirect (302) response to the Location _/register_ means that our request succeeded!<br/>
-With an invalid request (CSRF token not fitting to the invite code) we would have stayed on the _/invite_ page with a corresponding error message.
+With an invalid request (a request where CSRF token and invite code wouldn't correlate) we would have stayed on the _/invite_ page with a corresponding error message.<br/>
+<br/>
+# Automated session with __wfuzz__
+We are big fans of Xavi Mendez' _wfuzz_<br/>
+That's why _metahttp_ embraces the concepts and lingo of _wfuzz_<br/>
+Let's illustrate that with the following example, which is an automation of the before mentioned _hackthebox_ invite challenge.<br/>
+During the course of the _curl_ session, manual work was required in terms of editing the _hackthebox.metahttp.xml_ with the gathered CSRF token and invite code. This manual intervention will not be necessary with the following _methttp_ session, because we will use _wfuzz_' object introspection functionality.<br/>
+
+## Metadata
+Here is the content of our new session file _hackthebox.wfuzz.metahttp.xml_:
+
+    <session newcookies="true" baseurl="https://www.hackthebox.eu" proxy="http://127.0.0.1:8080" stdout="-">
+        <req tool="wfuzz" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
+            <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+            <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+            <header name="Accept-Language" value="en-US,en;q=0.5"/>
+            <header name="Pragma" value="no-cache"/>
+            <header name="Cache-Control" value="no-cache"/>
+            <payload type="list" fn="GET"/>
+            <form method="FUZZ" action="/invite" enctype="application/x-www-form-urlencoded"/>
+        </req>
+        <req tool="wfuzz" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
+            <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+            <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+            <header name="Accept-Language" value="en-US,en;q=0.5"/>
+            <header name="Referer" value="https://www.hackthebox.eu/"/>
+            <header name="Pragma" value="no-cache"/>
+            <header name="Cache-Control" value="no-cache"/>
+            <payload type="wfuzzp" fn="WFUZZP1" description="FUZZ: read results of the 1st request"/>
+            <cookie name="__cfduid" value="FUZZ[r.cookies.response.__cfduid]"/>
+            <cookie name="hackthebox_session" value="FUZZ[r.cookies.response.hackthebox_session]"/>
+            <cookie name="XSRF-TOKEN" value="FUZZ[r.cookies.response.XSRF-TOKEN]"/>
+            <form method="POST" action="/api/invite/generate" enctype="application/x-www-form-urlencoded">
+            </form>
+        </req>
+        <req tool="wfuzz" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
+            <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+            <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+            <header name="Accept-Language" value="en-US,en;q=0.5"/>
+            <header name="Accept-Encoding" value="gzip, deflate"/>
+            <header name="Referer" value="https://www.hackthebox.eu/"/>
+            <header name="Connection" value="close"/>
+            <header name="Pragma" value="no-cache"/>
+            <header name="Cache-Control" value="no-cache"/>
+            <payload type="wfuzzp" fn="WFUZZP1" description="FUZZ: read results of the 1st request"/>
+            <cookie name="__cfduid" value="FUZZ[r.cookies.response.__cfduid]"/>
+            <cookie name="hackthebox_session" value="FUZZ[r.cookies.response.hackthebox_session]"/>
+            <cookie name="XSRF-TOKEN" value="FUZZ[r.cookies.response.XSRF-TOKEN]"/>
+            <!--<payload type="wfuzzp" fn="WFUZZP1" field="history.content|gregex('.*name=.csrf-token. content=.([^>]*).>.*')"/>--> 
+            <payload type="wfuzzp" fn="WFUZZP1" field="history.content|gregex('.*input [^>]*name=._token. [^>]*value=.([^>]+).>.*')"/> 
+            <!-- Note: payload 'decoder' attribute only supported with wfuzzp payload and existing 'field' attribute" --> 
+            <payload type="wfuzzp" fn="WFUZZP2" field="history.content|gregex('.*.code.:.([^,]*).,.*')" decoder="base64" description="FUZZ: read results of the 2nd request"/>
+            <!--<extraswitch name="- -dry-run" value=""/>-->
+            <form method="POST" action="/invite" enctype="application/x-www-form-urlencoded">
+                    <input name="_token" value="FUZ2Z"/> 
+                    <input name="code" value="FUZ3Z"/> 
+            </form>
+        </req>
+        <req tool="wfuzz" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
+            <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+            <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+            <header name="Accept-Language" value="en-US,en;q=0.5"/>
+            <header name="Referer" value="https://www.hackthebox.eu/invite"/>
+            <header name="Pragma" value="no-cache"/>
+            <header name="Cache-Control" value="no-cache"/>
+            <payload type="wfuzzp" fn="WFUZZP3" description="FUZZ: read results of the 3rd request"/>
+            <cookie name="hackthebox_session" value="FUZZ[r.cookies.response.hackthebox_session]"/>
+            <cookie name="XSRF-TOKEN" value="FUZZ[r.cookies.response.XSRF-TOKEN]"/>
+            <form method="GET" action="/register" enctype="application/x-www-form-urlencoded">
+            </form>
+        </req>
+    </session>
+
+You might notice that the _tool_ attribute of each request has changed to _wfuzz_. Let's also introduce the concept of _payloads_: Each _payload_ within a request provides a stream of values that substitute a corresponding placeholder (_FUZ?Z_) in that request. The first payload will substitute placeholder FUZZ, the 2nd will substitute placeholder FUZ2Z and so forth). The result can be one to many substitutions (== requests), each corresponding to a combination of values in the streams.<br/>
+Please refer to the _wfuzz_ documentation for a more detailed (or better) description of _wfuzz_.<br/>
+Before you get confused or turned off, here's the good news: We will mostly use single-value payloads in this session.<br/>
+Things will get clearer once we play around with the _wfuzz_ _metahttp_ session.<br/>
+
+## 1st request     
+We compile the metadata: `cat meta/hackthebox.wfuzz.metahttp.xml | nc localhost 50774`<br/>
+
+    #!/bin/bash
+    rm -f WFUZZP?
+    echo ------------------------------------------------------------ wfuzz FUZZ 'https://www.hackthebox.eu/invite' : 
+    wfuzz \
+    -p 127.0.0.1:8080 \
+    -c \
+    -z 'list,GET' \
+    -X FUZZ \
+    -H 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
+    -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+    -H 'Accept-Language: en-US,en;q=0.5' \
+    -H 'Pragma: no-cache' \
+    -H 'Cache-Control: no-cache' \
+    --oF WFUZZP1 \
+    -H 'Host: www.hackthebox.eu' \
+    -H 'Content-Type: application/x-www-form-urlencoded' \
+    $'https://www.hackthebox.eu/invite' \
+    
+    echo ------------------------------------------------------------ wfuzz POST 'https://www.hackthebox.eu/api/invite/generate' : 
+    wfuzz \
+    -p 127.0.0.1:8080 \
+    -c \
+    -z 'wfuzzp,WFUZZP1' \
+    -X POST \
+    -H 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
+    -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+    -H 'Accept-Language: en-US,en;q=0.5' \
+    -H 'Referer: https://www.hackthebox.eu/' \
+    -H 'Pragma: no-cache' \
+    -H 'Cache-Control: no-cache' \
+    --oF WFUZZP2 \
+    -b '__cfduid=FUZZ[r.cookies.response.__cfduid]; hackthebox_session=FUZZ[r.cookies.response.hackthebox_session]; XSRF-TOKEN=FUZZ[r.cookies.response.XSRF-TOKEN]' \
+    -H 'Host: www.hackthebox.eu' \
+    -H 'Content-Type: application/x-www-form-urlencoded' \
+    -d $'' \
+    $'https://www.hackthebox.eu/api/invite/generate' \
+    
+    echo ------------------------------------------------------------ wfuzz POST 'https://www.hackthebox.eu/invite' : 
+    wfuzz \
+    -p 127.0.0.1:8080 \
+    -c \
+    -z 'wfuzzp,WFUZZP1' \
+    -z file,`f=$(mktemp); wfpayload.py -z 'wfuzzp,WFUZZP1' --field "history.content|gregex('.*input [^>]*name=._token. [^>]*value=.([^>]+).>.*')" | grep -vE "^$|^Warning:">$f; echo -n $f` \
+    -z file,`f=$(mktemp); wfpayload.py -z 'wfuzzp,WFUZZP2' --field "history.content|gregex('.*.code.:.([^,]*).,.*')" | grep -vE "^$|^Warning:" | base64 --decode>$f; echo -n $f` \
+    -X POST \
+    -H 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
+    -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+    -H 'Accept-Language: en-US,en;q=0.5' \
+    -H 'Accept-Encoding: gzip, deflate' \
+    -H 'Referer: https://www.hackthebox.eu/' \
+    -H 'Connection: close' \
+    -H 'Pragma: no-cache' \
+    -H 'Cache-Control: no-cache' \
+    --oF WFUZZP3 \
+    -b '__cfduid=FUZZ[r.cookies.response.__cfduid]; hackthebox_session=FUZZ[r.cookies.response.hackthebox_session]; XSRF-TOKEN=FUZZ[r.cookies.response.XSRF-TOKEN]' \
+    -H 'Host: www.hackthebox.eu' \
+    -H 'Content-Type: application/x-www-form-urlencoded' \
+    -d $'_token=FUZ2Z&code=FUZ3Z' \
+    $'https://www.hackthebox.eu/invite' \
+    
+    echo ------------------------------------------------------------ wfuzz GET 'https://www.hackthebox.eu/register' : 
+    wfuzz \
+    -p 127.0.0.1:8080 \
+    -c \
+    -z 'wfuzzp,WFUZZP3' \
+    -X GET \
+    -H 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
+    -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+    -H 'Accept-Language: en-US,en;q=0.5' \
+    -H 'Referer: https://www.hackthebox.eu/invite' \
+    -H 'Pragma: no-cache' \
+    -H 'Cache-Control: no-cache' \
+    -b 'hackthebox_session=FUZZ[r.cookies.response.hackthebox_session]; XSRF-TOKEN=FUZZ[r.cookies.response.XSRF-TOKEN]' \
+    -H 'Host: www.hackthebox.eu' \
+    -H 'Content-Type: application/x-www-form-urlencoded' \
+    $'https://www.hackthebox.eu/register' \
+    
+In order to run it, we copy and paste the lines up to (and including) the 1st request:<br/>
+
+    rm -f WFUZZP?
+    echo ------------------------------------------------------------ wfuzz FUZZ 'https://www.hackthebox.eu/invite' : 
+    ------------------------------------------------------------ wfuzz FUZZ https://www.hackthebox.eu/invite :
+    wfuzz \
+    > -p 127.0.0.1:8080 \
+    > -c \
+    > -z 'list,GET' \
+    > -X FUZZ \
+    > -H 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
+    > -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+    > -H 'Accept-Language: en-US,en;q=0.5' \
+    > -H 'Pragma: no-cache' \
+    > -H 'Cache-Control: no-cache' \
+    > --oF WFUZZP1 \
+    > -H 'Host: www.hackthebox.eu' \
+    > -H 'Content-Type: application/x-www-form-urlencoded' \
+    > $'https://www.hackthebox.eu/invite' \
+    > 
+    
+    Warning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.
+    
+    ********************************************************
+    * Wfuzz 2.4.5 - The Web Fuzzer                         *
+    ********************************************************
+    
+    Target: https://www.hackthebox.eu/invite
+    Total requests: 1
+    
+    ===================================================================
+    ID           Response   Lines    Word     Chars       Payload                                                                                                                                                                                          
+    ===================================================================
+    
+    000000001:   200        0 L      589 W    7440 Ch     "GET"                                                                                                                                                                                            
+    
+    Total time: 0.933818
+    Processed Requests: 1
+    Filtered Requests: 0
+    Requests/sec.: 1.070871
+    
+As opposed to _curl_ or _wget_, _wfuzz_ only return a summary of the response to stdout.<br/>
+There are 2 possibilities to view the details of the HTTP response:<br/>
+- _Burpsuite_: The Proxy / HTTP-History tab will show you all details of each request that went through the proxy (even rendered HTML)
+- _wfuzz_ payload and object introspection
+Time to explain the latter concept: You might have noticed the command line argument `--oF WFUZZP1` in the most recent _wfuzz_ statement.<br/>
+A `WFUZZP1` file has been created in the current directory. That file is (kind of) comparable to the cookies.txt file that _curl_ created in the previous session, however it contains much more:<br/>
+It basically contains an object representation of each and every component involved in the associated HTTP request/response. You may regard it as a little database of HTTP protocol components.<br/>
+How do we query this database? _wfpayload.py_ is the answer.<br/>
+<sub>Note: If you have wfuzz installed on your system, however your installation lacks the wfpayload.py script (we have seen that on the kali 2020.1 release), just copy the _src/wfpayload.py_ of this repository into your $PATH.<sup>
+
+Now, lets look at the content of the HTTP response contained in WFUZZP1 with `wfpayload.py -z 'wfuzzp,WFUZZP1' --field "history.content"`
+    
+    Warning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.
+    
+    <!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <meta name="viewport" content="width=device-width, initial-scale=1"> <meta name="description" content="Entry challenge for joining Hack The Box. You have to hack your way in!" /> <meta name="keywords" content="pen testing,hack,hacking,penetration testing,infosec,information security,labs"> <meta name="author" content="Hack The Box"> <meta name="google-site-verification" content="ut2KvZ-Bku4Vdbk1hfkkiX6W_Gb_9-CR9UD8ZU4B0mU" /> <meta property="og:title" content="Can you hack this box?" /> <meta property="og:url" content="https://www.hackthebox.eu" /> <meta property="og:image" content="https://www.hackthebox.eu/images/favicon.png" /> <meta property="og:site_name" content="Hack The Box" /> <meta property="fb:app_id" content="269224263502219" /> <meta property="og:description" content="An online platform to test and advance your skills in penetration testing and cyber security." /> <meta name="csrf-token" content="zxzBfQqsbIn7Fop0LwUaHiYVZrGxzzowZTfQUWhO"> <meta name="wot-verification" content="1eeefbec1f6305acd476" /> <script type='application/ld+json'> { "@context": "http://schema.org", "@type": "Organization", "url": "https://www.hackthebox.eu", "name": "Hack The Box", "contactPoint": [{ "@type": "ContactPoint", "telephone": "+44-203-6178-265", "contactType": "emergency" }], "sameAs": [ "https://www.facebook.com/hackthebox.eu", "https://www.linkedin.com/company/hackthebox", "https://twitter.com/hackthebox_eu" ], "logo": "https://www.hackthebox.eu/images/favicon.png", "description": "An online platform to test and advance your skills in penetration testing and cyber security.", "founder": { "@type": "Person", "name": "Haris Pylarinos" }, "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.95", "bestRating": "5", "worstRating": "1", "ratingCount": "787" } } </script> <script> !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on"];analytics.factory=function(t){return function(){var e=Array.prototype.slice.call(arguments);e.unshift(t);analytics.push(e);return analytics}};for(var t=0;t<analytics.methods.length;t++){var e=analytics.methods[t];analytics[e]=analytics.factory(e)}analytics.load=function(t,e){var n=document.createElement("script");n.type="text/javascript";n.async=!0;n.src="https://cdn.segment.com/analytics.js/v1/"+t+"/analytics.min.js";var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(n,a);analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.1.0"; analytics.load("0TfpkI8Z8dM5cArXmzVpfEBmj10vpbfI"); analytics.page("Invite"); }}(); </script> <title>Hack The Box :: Can you hack this box?</title> <link rel="canonical" href="https://www.hackthebox.eu/invite" /> <style> .native-ad #_default_ { position: relative; padding: 10px 10px; background: repeating-linear-gradient(-45deg, transparent, transparent 5px, hsla(0, 0%, 0%, .05) 5px, hsla(0, 0%, 0%, .05) 10px) hsla(203, 11%, 23%, 0.5); font-size: 14px; line-height: 1.5; } .native-ad #_default_:after { position: absolute; bottom: 0; left: 0; overflow: hidden; width: 100%; border-bottom: solid 4px #9acc15; content: ""; transition: all .2s ease-in-out; transform: scaleX(0); } .native-ad #_default_:hover:after { transform: scaleX(1); } .native-ad .default-ad { display: none; } .native-ad ._default_ { display: inline; overflow: hidden; } .native-ad ._default_ > * { vertical-align: middle; } .native-ad a { color: inherit; text-decoration: none; } .native-ad a:hover { color: inherit; } .native-ad .default-image { display: none; } .native-ad .default-title, .native-ad .default-description { display: inline; line-height: 1; } .native-ad .default-title { position: relative; margin-right: 8px; font-weight: 600; } .native-ad .default-title:before { position: absolute; top: -23px; padding: 4px 6px; border-radius: 3px; background-color: #9acc15; color: #fff; content: "Sponsor"; text-transform: uppercase; font-weight: 600; letter-spacing: 1px; font-size: 10px; line-height: 1; } </style> <link rel="stylesheet" href="https://www.hackthebox.eu/css/htb-frontend.css" /> <link rel="stylesheet" href="https://www.hackthebox.eu/css/icons.css" /> <link rel="icon" href="/images/favicon.png"> <script async src="https://www.googletagmanager.com/gtag/js?id=AW-757546894"></script> <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'AW-757546894'); </script> </head> <body class="blank" style="overflow-y:hidden; "> <script> (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) })(window,document,'script','https://www.google-analytics.com/analytics.js','ga'); ga('create', 'UA-93577176-1', 'auto'); ga('set','anonymizeIp',true); ga('send', 'pageview'); </script> <div class="wrapper"> <section class="content" style="margin:0px; padding:0px;"> <div class="container-center centerbox"> <div class="view-header"> <div class="header-icon"> <i class="pe page-header-icon pe-7s-smile"></i> </div> <div class="header-title"> <h1 style="font-size:24px;margin-bottom:2px;">Invite Challenge</h1> <small> Hi! Feel free to hack your way in :) </small> </div> </div> <div class="panel panel-filled"> <div class="panel-body"> <p><span class="c-white">Hack this page to get your invite code!</span></p> <form action="https://www.hackthebox.eu/invite" id="verifyForm" method="post"> <input type="hidden" name="_token" value="zxzBfQqsbIn7Fop0LwUaHiYVZrGxzzowZTfQUWhO"> <div class="form-group "> <label class="control-label" for="code">Invite Code</label> <input type="text" title="Please enter your invite code" required="" value="" name="code" id="code" class="form-control"> <span class="help-block small"></span> </div> <div> <button class="btn btn-accent">Sign Up</button> </div> </form> </div> </div> <span class="help-block small text-center">If you are already a member click <a href="https://www.hackthebox.eu/login">here</a> to login.</span> <br> <div class="view-header"> <div class="header-icon"> <i class="pe page-header-icon pe-7s-way"></i> </div> <div class="header-title"> <h3> Want some help? </h3> <br> <div style="display: inline-block"> <button class="btn btn-accent" onclick="showHint()"> Click Here! </button> <p id="help_text" hidden><br> You could check the console... </p> </div> </div> </div> <div class="native-ad"></div> <script> (function(){ if(typeof _bsa !== 'undefined' && _bsa) { _bsa.init('default', 'CKYDLKJJ', 'placement:hacktheboxeu', { target: '.native-ad', align: 'horizontal', disable_css: 'true' }); } })(); </script> </div> <div class="particles_full" id="particles-js"></div> </section> </div> <script src="https://www.hackthebox.eu/js/htb-frontend.min.js"></script> <script defer src="/js/inviteapi.min.js"></script> <script defer src="https://www.hackthebox.eu/js/calm.js"></script> <script>function showHint() { $("#help_text").show(); }</script> </body> </html>
+
+We can even make our query more specific by adding a regular expression to it: `wfpayload.py -z 'wfuzzp,WFUZZP1' --field "history.content|gregex('.*input [^>]*name=._token. [^>]*value=.([^>]+).>.*')"`<br/>
+
+    Warning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.
+    
+    zxzBfQqsbIn7Fop0LwUaHiYVZrGxzzowZTfQUWhO
+
+## 2nd request
+xxxxxxxxxxxxxxxxxxxxxxxx<br/>
+    wfuzz \
+    > -p 127.0.0.1:8080 \
+    > -c \
+    > -z 'wfuzzp,WFUZZP1' \
+    > -X POST \
+    > -H 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
+    > -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+    > -H 'Accept-Language: en-US,en;q=0.5' \
+    > -H 'Referer: https://www.hackthebox.eu/' \
+    > -H 'Pragma: no-cache' \
+    > -H 'Cache-Control: no-cache' \
+    > --oF WFUZZP2 \
+    > -b '__cfduid=FUZZ[r.cookies.response.__cfduid]; hackthebox_session=FUZZ[r.cookies.response.hackthebox_session]; XSRF-TOKEN=FUZZ[r.cookies.response.XSRF-TOKEN]' \
+    > -H 'Host: www.hackthebox.eu' \
+    > -H 'Content-Type: application/x-www-form-urlencoded' \
+    > -d $'' \
+    > $'https://www.hackthebox.eu/api/invite/generate' \
+    > 
+    
+    Warning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.
+    
+    ********************************************************
+    * Wfuzz 2.4.5 - The Web Fuzzer                         *
+    ********************************************************
+    
+    Target: https://www.hackthebox.eu/api/invite/generate
+    Total requests: <<unknown>>
+    
+    ===================================================================
+    ID           Response   Lines    Word     Chars       Payload                                                                                                                                                                                          
+    ===================================================================
+    
+    000000001:   200        0 L      1 W      99 Ch       "da82d1500aa254b31552ee1ea95219deb1590765839 - eyJpdiI6IkJLWEFzSzZ0YnFaZXZ2WUhPMFZlN1E9PSIsInZhbHVlIjoiNjBEM3ptWm0zbElJSEcwXC9zazVURWpFU3dwXC85V1NrWm9YNFRcL2hzQ1JuVW45R3pBYlNZSm4weXFGV0tHMHhsSy
+                                                          IsIm1hYyI6IjA5NWQzMTlkMTkxMjRkMGU5OTJlZjEwNDZlYWZkNDRmM2ZmNjQxZjBkZDU3ZDhmOTAzMTdjZDkyZDA3ZDRlZDgifQ%3D%3D - eyJpdiI6InVienM3UWFWMVd6ZG5mSFZyTUVwdWc9PSIsInZhbHVlIjoiT2UwRXp1Y2VhSzRya0ZPOG5oMnBO
+                                                          QnJRR1NGd1ZGTStCakF2RmQ1YVwvZU0zZm54STVMdXFzaFR1Zmp4cEdzK1oiLCJtYWMiOiIzYzE5MmM0OTI0ZTJlNjVlMmM3MGQxZTc4ZDAwOGQwYjk1NDFhNTUxY2ZmOGI1YTRiOTMxNDc2MWRlNzQ2ZmRhIn0%3D"                              
+    
+    Total time: 0.729401
+    Processed Requests: 1
+    Filtered Requests: 0
+    Requests/sec.: 1.370987
+
+xxxxxxxxxxxxxxxxxxxxxxx `wfpayload.py -z 'wfuzzp,WFUZZP2' --field "history.content"`<br/>
+
+    Warning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.
+    
+    {"success":1,"data":{"code":"VlNZVkstTUNGRlktV1BaRFctU0JHV0YtVEVaSFk=","format":"encoded"},"0":200}
+xxxxxxxxxxxxxxxxxxxxxxxxxxxx<br/>
+    # wfuzz \
+    > -p 127.0.0.1:8080 \
+    > -c \
+    > -z 'wfuzzp,WFUZZP1' \
+    > -z file,`f=$(mktemp); wfpayload.py -z 'wfuzzp,WFUZZP1' --field "history.content|gregex('.*input [^>]*name=._token. [^>]*value=.([^>]+).>.*')" | grep -vE "^$|^Warning:">$f; echo -n $f` \
+    > -z file,`f=$(mktemp); wfpayload.py -z 'wfuzzp,WFUZZP2' --field "history.content|gregex('.*.code.:.([^,]*).,.*')" | grep -vE "^$|^Warning:" | base64 --decode>$f; echo -n $f` \
+    > -X POST \
+    > -H 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
+    > -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+    > -H 'Accept-Language: en-US,en;q=0.5' \
+    > -H 'Accept-Encoding: gzip, deflate' \
+    > -H 'Referer: https://www.hackthebox.eu/' \
+    > -H 'Connection: close' \
+    > -H 'Pragma: no-cache' \
+    > -H 'Cache-Control: no-cache' \
+    > --oF WFUZZP3 \
+    > -b '__cfduid=FUZZ[r.cookies.response.__cfduid]; hackthebox_session=FUZZ[r.cookies.response.hackthebox_session]; XSRF-TOKEN=FUZZ[r.cookies.response.XSRF-TOKEN]' \
+    > -H 'Host: www.hackthebox.eu' \
+    > -H 'Content-Type: application/x-www-form-urlencoded' \
+    > -d $'_token=FUZ2Z&code=FUZ3Z' \
+    > $'https://www.hackthebox.eu/invite' \
+    > 
+    
+    Warning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.
+    
+    ********************************************************
+    * Wfuzz 2.4.5 - The Web Fuzzer                         *
+    ********************************************************
+    
+    Target: https://www.hackthebox.eu/invite
+    Total requests: <<unknown>>
+    
+    ===================================================================
+    ID           Response   Lines    Word     Chars       Payload                                                                                                                                                                                          
+    ===================================================================
+    
+    000000001:   302        10 L     22 W     333 Ch      "da82d1500aa254b31552ee1ea95219deb1590765839 - eyJpdiI6IkJLWEFzSzZ0YnFaZXZ2WUhPMFZlN1E9PSIsInZhbHVlIjoiNjBEM3ptWm0zbElJSEcwXC9zazVURWpFU3dwXC85V1NrWm9YNFRcL2hzQ1JuVW45R3pBYlNZSm4weXFGV0tHMHhsSy
+                                                          IsIm1hYyI6IjA5NWQzMTlkMTkxMjRkMGU5OTJlZjEwNDZlYWZkNDRmM2ZmNjQxZjBkZDU3ZDhmOTAzMTdjZDkyZDA3ZDRlZDgifQ%3D%3D - eyJpdiI6InVienM3UWFWMVd6ZG5mSFZyTUVwdWc9PSIsInZhbHVlIjoiT2UwRXp1Y2VhSzRya0ZPOG5oMnBO
+                                                          QnJRR1NGd1ZGTStCakF2RmQ1YVwvZU0zZm54STVMdXFzaFR1Zmp4cEdzK1oiLCJtYWMiOiIzYzE5MmM0OTI0ZTJlNjVlMmM3MGQxZTc4ZDAwOGQwYjk1NDFhNTUxY2ZmOGI1YTRiOTMxNDc2MWRlNzQ2ZmRhIn0%3D - zxzBfQqsbIn7Fop0LwUaHiYVZrGx
+                                                          zzowZTfQUWhO - VSYVK-MCFFY-WPZDW-SBGWF-TEZHY"                                                                                                                                                    
+    
+    Total time: 0.596053
+    Processed Requests: 1
+    Filtered Requests: 0
+    Requests/sec.: 1.677700
+
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br/>
+    wfuzz \
+    > -p 127.0.0.1:8080 \
+    > -c \
+    > -z 'wfuzzp,WFUZZP3' \
+    > -X GET \
+    > -H 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
+    > -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
+    > -H 'Accept-Language: en-US,en;q=0.5' \
+    > -H 'Referer: https://www.hackthebox.eu/invite' \
+    > -H 'Pragma: no-cache' \
+    > -H 'Cache-Control: no-cache' \
+    > -b 'hackthebox_session=FUZZ[r.cookies.response.hackthebox_session]; XSRF-TOKEN=FUZZ[r.cookies.response.XSRF-TOKEN]' \
+    > -H 'Host: www.hackthebox.eu' \
+    > -H 'Content-Type: application/x-www-form-urlencoded' \
+    > $'https://www.hackthebox.eu/register' \
+    > 
+    
+    Warning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.
+    
+    ********************************************************
+    * Wfuzz 2.4.5 - The Web Fuzzer                         *
+    ********************************************************
+    
+    Target: https://www.hackthebox.eu/register
+    Total requests: <<unknown>>
+    
+    ===================================================================
+    ID           Response   Lines    Word     Chars       Payload                                                                                                                                                                                          
+    ===================================================================
+    
+    000000001:   200        1 L      743 W    11018 Ch    "eyJpdiI6InY5blBhTTNXU0tQaUV1SUx2NnBmZXc9PSIsInZhbHVlIjoiTUM4Vk9uVDRmWWticThUY3U0VjN6aHY1MVIyT1g3MmZhMlk5VWtjVXZQcVJHZFVmM1BlamQwUWpEM2pFakhENSIsIm1hYyI6Ijg4YWFkZDExM2NhNDMxMzFkNDI3MjcxMDE0MTc0
+                                                          MzE2YzM4OGMxODc1ODkyNzA0NzllOTE1ZmU5OGYyNzQxODAifQ%3D%3D - eyJpdiI6Ikh1OVd5Y0ZwNTU4K3RFQlwvWG1SanZ3PT0iLCJ2YWx1ZSI6IkgrRjVEMlpFdGhyRmRITXlPb2NYa0E2YTVzUWxNQVNudFBZbVhQY01JdDBSaEhKMkc0RjJoVHc1aj
+                                                          lrMm9tRUMiLCJtYWMiOiIzOGU1M2UwMWNkNjdjYTZlNjNhMTRlOTE3YjZlN2U4MjkwNDlhOTRmMzVmMTczMmQwNmUxNGIxZGYyOWMxMmU5In0%3D"                                                                                
+    
+    Total time: 0.717396
+    Processed Requests: 1
+    Filtered Requests: 0
+    Requests/sec.: 1.393928
+    
