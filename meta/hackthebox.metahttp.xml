@@ -1,0 +1,35 @@
+<session newcookies="true" baseurl="https://www.hackthebox.eu" proxy="http://127.0.0.1:8080" stdout="-">
+    <req tool="curl" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
+        <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+        <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+        <header name="Accept-Language" value="en-US,en;q=0.5"/>
+        <header name="Pragma" value="no-cache"/>
+        <header name="Cache-Control" value="no-cache"/>
+        <form method="GET" action="/invite" enctype="application/x-www-form-urlencoded">
+        </form>
+    </req>
+    <req tool="curl" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
+        <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+        <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+        <header name="Accept-Language" value="en-US,en;q=0.5"/>
+        <header name="Referer" value="https://www.hackthebox.eu/"/>
+        <header name="Pragma" value="no-cache"/>
+        <header name="Cache-Control" value="no-cache"/>
+        <form method="POST" action="/api/invite/generate" enctype="application/x-www-form-urlencoded">
+        </form>
+    </req>
+    <req tool="curl" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
+        <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
+        <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
+        <header name="Accept-Language" value="en-US,en;q=0.5"/>
+        <header name="Accept-Encoding" value="gzip, deflate"/>
+        <header name="Referer" value="https://www.hackthebox.eu/"/>
+        <header name="Connection" value="close"/>
+        <header name="Pragma" value="no-cache"/>
+        <header name="Cache-Control" value="no-cache"/>
+        <form method="POST" action="/invite" enctype="application/x-www-form-urlencoded">
+		<input type="hidden" name="_token" value="skjfZaE4BcsoIaQNlt1YrmsEDsmWeC9yQwrihVOB"/> 
+		<input type="text" title="Please enter your invite code" required="" value="WVVFF-PQTUC-RDPGE-IZBUW-LBDAC" name="code" id="code" class="form-control"/> 
+        </form>
+    </req>
+</session>
