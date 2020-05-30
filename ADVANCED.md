@@ -706,3 +706,10 @@ Copy and paste the 4th _wfuzz_ statement:<br/>
     
 Looks promising. To confirm, let's check BurpSuite proxy what response the request received:<br/>
 ![BurpSuite Proxy](/images/burp-proxy-raw-register-response1.png)
+<br/>
+## 5th request ?
+As we can see in the highlighted part of the HTML that BurpSuite shows us, all the codes are set up nicely for our actual user registration.<br/>
+So you might ask, why don't we create a 5th request that includes a name, email, password, accepts the TOS and kicks off the actual automated registration per POST request?<br/>
+The reason we can __*not*__ automate this 5th request is a form field called _g-recaptcha-response_ that is required. It needs to contain the result code of the Google _Recaptcha_ service that can _only_ be retrieved through _manual_ interaction in the browser (clicking images with crosswalks an the like to proove you're not a robot).<br/>
+<br/>
+What you _can_ do though is hijack your own browser session by setting the cookies (e.g. via Firefox plugin) and codes (via developer tools) that you retrieved through _wfuzz_, click through the little Recaptcha challenge ... and shoot!
