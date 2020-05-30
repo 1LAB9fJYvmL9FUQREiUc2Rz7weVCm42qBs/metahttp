@@ -181,3 +181,7 @@ We make the file executable and run it: `chmod +x duckduckgo.proxy.sh && ./duckd
 ... which results in the output of the HTTP response - not only in our terminal, but also in Burpsuite proxy.<br/>
 We can even conveniently view the rendered web page on the proxy's response tab:<br/>
 ![BurpSuite Proxy](/images/burp-proxy-rendered-response1.png)
+<br/>
+<br>
+Once you have made yourself familiar with _metahttp_, please keep reading [ADVANCED.md](./ADVANCED.md)<br/>
+
