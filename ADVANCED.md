@@ -520,27 +520,43 @@ In order to run it, we copy and paste the lines up to (and including) the 1st re
 As opposed to _curl_ or _wget_, _wfuzz_ only return a summary of the response to stdout.<br/>
 There are 2 possibilities to view the details of the HTTP response:<br/>
 - _Burpsuite_: The Proxy / HTTP-History tab will show you all details of each request that went through the proxy (even rendered HTML)
-- _wfuzz_ payload and object introspection
+- _wfuzz_ payload and object introspection<br/>
 Time to explain the latter concept: You might have noticed the command line argument `--oF WFUZZP1` in the most recent _wfuzz_ statement.<br/>
 A `WFUZZP1` file has been created in the current directory. That file is (kind of) comparable to the cookies.txt file that _curl_ created in the previous session, however it contains much more:<br/>
 It basically contains an object representation of each and every component involved in the associated HTTP request/response. You may regard it as a little database of HTTP protocol components.<br/>
 How do we query this database? _wfpayload.py_ is the answer.<br/>
 <sub>Note: If you have wfuzz installed on your system, however your installation lacks the wfpayload.py script (we have seen that on the kali 2020.1 release), just copy the _src/wfpayload.py_ of this repository into your $PATH.<sup>
 
-Now, lets look at the content of the HTTP response contained in WFUZZP1 with `wfpayload.py -z 'wfuzzp,WFUZZP1' --field "history.content"`
+Now, let's look at the value of a response cookie contained in WFUZZP1 with<br/>
+`wfpayload.py -z 'wfuzzp,WFUZZP1' --field 'r.cookies.response.XSRF-TOKEN'`
+
+    Warning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.
+    eyJpdiI6InVienM3UWFWMVd6ZG5mSFZyTUVwdWc9PSIsInZhbHVlIjoiT2UwRXp1Y2VhSzRya0ZPOG5oMnBOQnJRR1NGd1ZGTStCakF2RmQ1YVwvZU0zZm54STVMdXFzaFR1Zmp4cEdzK1oiLCJtYWMiOiIzYzE5MmM0OTI0ZTJlNjVlMmM3MGQxZTc4ZDAwOGQwYjk1NDFhNTUxY2ZmOGI1YTRiOTMxNDc2MWRlNzQ2ZmRhIn0%3D
     
+Let's look at the content of the HTTP response contained in WFUZZP1 with<br/>
+`wfpayload.py -z 'wfuzzp,WFUZZP1' --field "history.content"`
+
     Warning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.
     
     <!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <meta name="viewport" content="width=device-width, initial-scale=1"> <meta name="description" content="Entry challenge for joining Hack The Box. You have to hack your way in!" /> <meta name="keywords" content="pen testing,hack,hacking,penetration testing,infosec,information security,labs"> <meta name="author" content="Hack The Box"> <meta name="google-site-verification" content="ut2KvZ-Bku4Vdbk1hfkkiX6W_Gb_9-CR9UD8ZU4B0mU" /> <meta property="og:title" content="Can you hack this box?" /> <meta property="og:url" content="https://www.hackthebox.eu" /> <meta property="og:image" content="https://www.hackthebox.eu/images/favicon.png" /> <meta property="og:site_name" content="Hack The Box" /> <meta property="fb:app_id" content="269224263502219" /> <meta property="og:description" content="An online platform to test and advance your skills in penetration testing and cyber security." /> <meta name="csrf-token" content="zxzBfQqsbIn7Fop0LwUaHiYVZrGxzzowZTfQUWhO"> <meta name="wot-verification" content="1eeefbec1f6305acd476" /> <script type='application/ld+json'> { "@context": "http://schema.org", "@type": "Organization", "url": "https://www.hackthebox.eu", "name": "Hack The Box", "contactPoint": [{ "@type": "ContactPoint", "telephone": "+44-203-6178-265", "contactType": "emergency" }], "sameAs": [ "https://www.facebook.com/hackthebox.eu", "https://www.linkedin.com/company/hackthebox", "https://twitter.com/hackthebox_eu" ], "logo": "https://www.hackthebox.eu/images/favicon.png", "description": "An online platform to test and advance your skills in penetration testing and cyber security.", "founder": { "@type": "Person", "name": "Haris Pylarinos" }, "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.95", "bestRating": "5", "worstRating": "1", "ratingCount": "787" } } </script> <script> !function(){var analytics=window.analytics=window.analytics||[];if(!analytics.initialize)if(analytics.invoked)window.console&&console.error&&console.error("Segment snippet included twice.");else{analytics.invoked=!0;analytics.methods=["trackSubmit","trackClick","trackLink","trackForm","pageview","identify","reset","group","track","ready","alias","debug","page","once","off","on"];analytics.factory=function(t){return function(){var e=Array.prototype.slice.call(arguments);e.unshift(t);analytics.push(e);return analytics}};for(var t=0;t<analytics.methods.length;t++){var e=analytics.methods[t];analytics[e]=analytics.factory(e)}analytics.load=function(t,e){var n=document.createElement("script");n.type="text/javascript";n.async=!0;n.src="https://cdn.segment.com/analytics.js/v1/"+t+"/analytics.min.js";var a=document.getElementsByTagName("script")[0];a.parentNode.insertBefore(n,a);analytics._loadOptions=e};analytics.SNIPPET_VERSION="4.1.0"; analytics.load("0TfpkI8Z8dM5cArXmzVpfEBmj10vpbfI"); analytics.page("Invite"); }}(); </script> <title>Hack The Box :: Can you hack this box?</title> <link rel="canonical" href="https://www.hackthebox.eu/invite" /> <style> .native-ad #_default_ { position: relative; padding: 10px 10px; background: repeating-linear-gradient(-45deg, transparent, transparent 5px, hsla(0, 0%, 0%, .05) 5px, hsla(0, 0%, 0%, .05) 10px) hsla(203, 11%, 23%, 0.5); font-size: 14px; line-height: 1.5; } .native-ad #_default_:after { position: absolute; bottom: 0; left: 0; overflow: hidden; width: 100%; border-bottom: solid 4px #9acc15; content: ""; transition: all .2s ease-in-out; transform: scaleX(0); } .native-ad #_default_:hover:after { transform: scaleX(1); } .native-ad .default-ad { display: none; } .native-ad ._default_ { display: inline; overflow: hidden; } .native-ad ._default_ > * { vertical-align: middle; } .native-ad a { color: inherit; text-decoration: none; } .native-ad a:hover { color: inherit; } .native-ad .default-image { display: none; } .native-ad .default-title, .native-ad .default-description { display: inline; line-height: 1; } .native-ad .default-title { position: relative; margin-right: 8px; font-weight: 600; } .native-ad .default-title:before { position: absolute; top: -23px; padding: 4px 6px; border-radius: 3px; background-color: #9acc15; color: #fff; content: "Sponsor"; text-transform: uppercase; font-weight: 600; letter-spacing: 1px; font-size: 10px; line-height: 1; } </style> <link rel="stylesheet" href="https://www.hackthebox.eu/css/htb-frontend.css" /> <link rel="stylesheet" href="https://www.hackthebox.eu/css/icons.css" /> <link rel="icon" href="/images/favicon.png"> <script async src="https://www.googletagmanager.com/gtag/js?id=AW-757546894"></script> <script> window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'AW-757546894'); </script> </head> <body class="blank" style="overflow-y:hidden; "> <script> (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) })(window,document,'script','https://www.google-analytics.com/analytics.js','ga'); ga('create', 'UA-93577176-1', 'auto'); ga('set','anonymizeIp',true); ga('send', 'pageview'); </script> <div class="wrapper"> <section class="content" style="margin:0px; padding:0px;"> <div class="container-center centerbox"> <div class="view-header"> <div class="header-icon"> <i class="pe page-header-icon pe-7s-smile"></i> </div> <div class="header-title"> <h1 style="font-size:24px;margin-bottom:2px;">Invite Challenge</h1> <small> Hi! Feel free to hack your way in :) </small> </div> </div> <div class="panel panel-filled"> <div class="panel-body"> <p><span class="c-white">Hack this page to get your invite code!</span></p> <form action="https://www.hackthebox.eu/invite" id="verifyForm" method="post"> <input type="hidden" name="_token" value="zxzBfQqsbIn7Fop0LwUaHiYVZrGxzzowZTfQUWhO"> <div class="form-group "> <label class="control-label" for="code">Invite Code</label> <input type="text" title="Please enter your invite code" required="" value="" name="code" id="code" class="form-control"> <span class="help-block small"></span> </div> <div> <button class="btn btn-accent">Sign Up</button> </div> </form> </div> </div> <span class="help-block small text-center">If you are already a member click <a href="https://www.hackthebox.eu/login">here</a> to login.</span> <br> <div class="view-header"> <div class="header-icon"> <i class="pe page-header-icon pe-7s-way"></i> </div> <div class="header-title"> <h3> Want some help? </h3> <br> <div style="display: inline-block"> <button class="btn btn-accent" onclick="showHint()"> Click Here! </button> <p id="help_text" hidden><br> You could check the console... </p> </div> </div> </div> <div class="native-ad"></div> <script> (function(){ if(typeof _bsa !== 'undefined' && _bsa) { _bsa.init('default', 'CKYDLKJJ', 'placement:hacktheboxeu', { target: '.native-ad', align: 'horizontal', disable_css: 'true' }); } })(); </script> </div> <div class="particles_full" id="particles-js"></div> </section> </div> <script src="https://www.hackthebox.eu/js/htb-frontend.min.js"></script> <script defer src="/js/inviteapi.min.js"></script> <script defer src="https://www.hackthebox.eu/js/calm.js"></script> <script>function showHint() { $("#help_text").show(); }</script> </body> </html>
 
-We can even make our query more specific by adding a regular expression to it: `wfpayload.py -z 'wfuzzp,WFUZZP1' --field "history.content|gregex('.*input [^>]*name=._token. [^>]*value=.([^>]+).>.*')"`<br/>
+We can even make our query more specific by adding a regular expression to it:<br/>
+`wfpayload.py -z 'wfuzzp,WFUZZP1' --field "history.content|gregex('.*input [^>]*name=._token. [^>]*value=.([^>]+).>.*')"`<br/>
 
     Warning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.
     
     zxzBfQqsbIn7Fop0LwUaHiYVZrGxzzowZTfQUWhO
 
 ## 2nd request
-xxxxxxxxxxxxxxxxxxxxxxxx<br/>
+Now that we know how the WFUZZPn files can be queried by _wfpayload.py_, we better understand the tags contained in the 2nd request in _hackthebox.wfuzz.metahttp.xml_:<br/>
+
+    <payload type="wfuzzp" fn="WFUZZP1" description="FUZZ: read results of the 1st request"/>
+    <cookie name="__cfduid" value="FUZZ[r.cookies.response.__cfduid]"/>
+    <cookie name="hackthebox_session" value="FUZZ[r.cookies.response.hackthebox_session]"/>
+    <cookie name="XSRF-TOKEN" value="FUZZ[r.cookies.response.XSRF-TOKEN]"/>
+
+_metahttp_ integrates the _wfpayload.py_ queries in a way that the session cookies from the 1st request will be reused in the 2nd request. Let's copy and paste the 2nd _wfuzz_ statement in order to run it:<br/>
+
     wfuzz \
     > -p 127.0.0.1:8080 \
     > -c \
@@ -582,12 +598,21 @@ xxxxxxxxxxxxxxxxxxxxxxxx<br/>
     Filtered Requests: 0
     Requests/sec.: 1.370987
 
-xxxxxxxxxxxxxxxxxxxxxxx `wfpayload.py -z 'wfuzzp,WFUZZP2' --field "history.content"`<br/>
+A new object file _WFUZZP2_ has been written by the 2nd request. Let's query its contents:<br/>
+`wfpayload.py -z 'wfuzzp,WFUZZP2' --field "history.content"`<br/>
 
     Warning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.
     
     {"success":1,"data":{"code":"VlNZVkstTUNGRlktV1BaRFctU0JHV0YtVEVaSFk=","format":"encoded"},"0":200}
-xxxxxxxxxxxxxxxxxxxxxxxxxxxx<br/>
+We have received an invite code, still base64-encoded. Let's leave it this way for now.<br/>
+<br/>
+## 3rd request
+Looking at _hackthebox.wfuzz.metahttp.xml_, the tag that deals with the invite code payload within the 3rd request is:<br/>
+
+    <payload type="wfuzzp" fn="WFUZZP2" field="history.content|gregex('.*.code.:.([^,]*).,.*')" decoder="base64" description="FUZZ: read results of the 2nd request"/>
+
+Below, you see how _metahttp_ integrates the _wfpayload.py_ call into the _wfuzz_ payload parameters (_-z_ arguments). Let's copy and paste the 3rd _wfuzz_ statement in order to run it:<br/> 
+
     # wfuzz \
     > -p 127.0.0.1:8080 \
     > -c \
@@ -634,7 +659,12 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxx<br/>
     Filtered Requests: 0
     Requests/sec.: 1.677700
 
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br/>
+Like in the _curl_ example (see above), the redirection (code 302) is an indicator that the request was successful and we get redirected to the _/register_ page with valid codes (please also note the decoded invite code `VSYVK-MCFFY-WPZDW-SBGWF-TEZHY` within the _Payload_ column).<br/>
+<br/>
+## 4th request
+This time, we are actually going to request the _/register_ page with the cookies that we received in the session so far.
+Copy and paste the 4th _wfuzz_ statement:<br/>
+
     wfuzz \
     > -p 127.0.0.1:8080 \
     > -c \
@@ -674,3 +704,4 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx<br/>
     Filtered Requests: 0
     Requests/sec.: 1.393928
     
+Looks promising. To confirm, let's check BurpSuite proxy what response the request received:<br/>
