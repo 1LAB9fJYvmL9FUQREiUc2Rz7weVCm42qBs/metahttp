@@ -391,7 +391,7 @@ Here is the content of our new session file _meta/hackthebox.wfuzz.metahttp.xml_
         </req>
     </session>
 
-You might notice that the _tool_ attribute of each request has changed to _wfuzz_. Let's also introduce the concept of _payloads_: Each _payload_ within a request provides a stream of values that substitute a corresponding placeholder (_FUZ?Z_) in that request. The first payload will substitute placeholder FUZZ, the 2nd will substitute placeholder FUZ2Z and so forth). The result can be one to many substitutions (== requests), each corresponding to a combination of values in the streams.<br/>
+You might notice that the _tool_ attribute of each request has changed to _wfuzz_. Let's also introduce the concept of _payloads_: Each _payload_ within a request provides a stream of values that substitute a corresponding placeholder (_FUZ?Z_) in that request. The first payload will substitute placeholder FUZZ, the 2nd will substitute placeholder FUZ2Z (and so forth). The result can be one to many substitutions (== requests), each corresponding to a combination of values in the streams.<br/>
 Please refer to the _wfuzz_ documentation for a more detailed (or better) description of _wfuzz_.<br/>
 Before you get confused or turned off, here's the good news: We will mostly use single-value payloads in this session.<br/>
 Things will get clearer once we play around with the _metahttp_ _wfuzz_ session.<br/>
