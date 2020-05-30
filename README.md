@@ -1,5 +1,5 @@
 # metahttp
-A layer above Linux tools that deal with the HTTP(S) protocol
+A layer above (wrapper around) standard Linux tools that deal with the HTTP(S) protocol: curl, wget, wfuzz. It can also create raw HTTP(S) requests. The lower level bash commands are derived from compact XML files that consist of definitions in a structured request language.
 
 ## Installation
 - Install docker:<br/>
