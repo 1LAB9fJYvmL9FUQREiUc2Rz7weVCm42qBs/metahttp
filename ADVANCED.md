@@ -324,10 +324,10 @@ With an invalid request (a request where CSRF token and invite code wouldn't cor
 We are big fans of Xavi Mendez' _wfuzz_. (https://github.com/xmendez/wfuzz)<br/>
 That's why _metahttp_ embraces the concepts and lingo of _wfuzz_.<br/>
 Let's illustrate that with the following example, which is an automation of the before mentioned _hackthebox_ invite challenge.<br/>
-During the course of the _curl_ session, manual work was required in terms of editing the _hackthebox.metahttp.xml_ with the gathered CSRF token and invite code. This manual intervention will not be necessary with the following _methttp_ session, because we will use _wfuzz_' object introspection functionality.<br/>
+During the course of the _curl_ session, manual work was required in terms of editing the _hackthebox.metahttp.xml_ with the gathered CSRF token and invite code. This manual intervention will not be necessary with the following _metahttp_ session, because we will use _wfuzz_' object introspection functionality.<br/>
 
 ## Metadata
-Here is the content of our new session file _hackthebox.wfuzz.metahttp.xml_:
+Here is the content of our new session file _meta/hackthebox.wfuzz.metahttp.xml_:
 
     <session newcookies="true" baseurl="https://www.hackthebox.eu" proxy="http://127.0.0.1:8080" stdout="-">
         <req tool="wfuzz" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
@@ -705,12 +705,12 @@ Copy and paste the 4th _wfuzz_ statement:<br/>
     Filtered Requests: 0
     Requests/sec.: 1.393928
     
-Looks promising. To confirm, let's check BurpSuite proxy what response the request received:<br/>
+Looks promising. To confirm, let's check BurpSuite proxy to see what response the request received:<br/>
 ![BurpSuite Proxy](/images/burp-proxy-raw-register-response1.png)
 <br/>
 ## 5th request ?
 As we can see in the highlighted part of the HTML that BurpSuite shows us, all the codes are set up nicely for our actual user registration.<br/>
 So you might ask, why don't we create a 5th request that includes a name, email, password, accepts the TOS and kicks off the actual automated registration per POST request?<br/>
-The reason we can __*not*__ automate this 5th request is a form field called __*g-recaptcha-response*__ that is required. It needs to contain the result code of the Google _Recaptcha_ service that can _only_ be retrieved through _manual_ interaction in the browser (clicking images with crosswalks an the like to proove you're not a robot).<br/>
+The reason we can __*not*__ automate this 5th request is a required form field called __*g-recaptcha-response*__. It needs to contain the result code of the Google _Recaptcha_ service that can _only_ be retrieved through _manual_ interaction in the browser (clicking images with crosswalks and the like to prove you're not a robot).<br/>
 <br/>
 What you _can_ do though is hijack your own browser session by setting the cookies (e.g. via Firefox plugin) and codes (via developer tools) that you retrieved through _wfuzz_, click through the little Recaptcha challenge ... and shoot!
