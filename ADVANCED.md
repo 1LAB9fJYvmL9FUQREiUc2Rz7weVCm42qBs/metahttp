@@ -705,3 +705,4 @@ Copy and paste the 4th _wfuzz_ statement:<br/>
     Requests/sec.: 1.393928
     
 Looks promising. To confirm, let's check BurpSuite proxy what response the request received:<br/>
+![BurpSuite Proxy](/images/burp-proxy-raw-register-response1.png)

@@ -28,8 +28,8 @@
         <header name="Pragma" value="no-cache"/>
         <header name="Cache-Control" value="no-cache"/>
         <form method="POST" action="/invite" enctype="application/x-www-form-urlencoded">
-		<input type="hidden" name="_token" value="skjfZaE4BcsoIaQNlt1YrmsEDsmWeC9yQwrihVOB"/> 
-		<input type="text" title="Please enter your invite code" required="" value="WVVFF-PQTUC-RDPGE-IZBUW-LBDAC" name="code" id="code" class="form-control"/> 
+		<input type="hidden" name="_token" value="I_DO_NOT_KNOW_YET"/> 
+		<input title="Please enter your invite code" value="I_DO_NOT_KNOW_YET" name="code"/> 
         </form>
     </req>
 </session>
