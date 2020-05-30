@@ -6,8 +6,10 @@
   A: Metahttp is a layer above (wrapper around) standard Linux tools that deal with the HTTP(S) protocol: curl, wfuzz, wget (as of version 1.0). It can also create raw HTTP(S) requests.
 
 - Q: What would be the audience of this toolkit?  
-  A: Pen testers, students, hacktivists or just people that want to learn the advanced features of wfuzz, wget, curl in a structured manner. We guess that this is not for beginners, because at least you have to be familiar with TCP/IP sockets, Linux pipes and the HTTP protocol.
+  A: Pen testers, students, hacktivists or just people that want to learn the advanced features of wfuzz, wget, curl in a structured manner. We guess that this is not for beginners, because at least you have to be familiar with TCP/IP sockets, Linux pipes, HTTP proxies and the HTTP protocol.
 
 - Q: Why do I need docker to play around with metahttp?  
   A: We figured that the docker approach is the cleanest way to package things: Everything you install just ends up in your docker image, so you have a guarantee that the installation is reversible and you don't mess up anything on your computer. When you don't want metahttp any more, just "docker rmi" your image and everything will be thrown away.
 
+- Q: How do I get started?  
+  A: Read README.md and ADVANCED.md  
