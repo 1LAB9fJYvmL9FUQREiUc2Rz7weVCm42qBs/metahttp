@@ -2,19 +2,23 @@
 A layer above Linux tools that deal with the HTTP(S) protocol
 
 ## Installation
-- Install docker<br/>
-- Clone this repository<br/>
-- Build the docker image from the Dockerfile<br/>
-- Run a container from the image<br/>
+- Install docker:<br/>
+  `sudo apt install docker`<br>
+- Clone this repository:<br/>
+  `git clone git@github.com:1LAB9fJYvmL9FUQREiUc2Rz7weVCm42qBs/metahttp.git`<br/>
+- With `dockerd` running, build the docker image from the _Dockerfile_:<br/>
+  `cd metahttp; docker build -t "ubuntu1604/socat/metahttp".`<br/>
+- Run a container based on the image:<br/>
+  `docker run --name=ubuntu1604-socat-metahttp --detach -it -p 127.0.0.1:50774:50774/tcp -p 127.0.0.1:50774:50774/udp ubuntu1604/socat/metahttp`
 - As a sanity check, see if your localhost now exposes ports 50774/tcp and 50774/udp:<br/>
+`netstat -antup | grep 50774`<br/>
 
-    #netstat -antup | grep 50774  
     tcp        0      0 127.0.0.1:50774         0.0.0.0:*               LISTEN      588215/docker-proxy  
     udp        0      0 127.0.0.1:50774         0.0.0.0:*                           588238/docker-proxy  
 
 ## Metahttp usage
 ### metahttp.xml files
-The metahttp.xml files are the basis of an HTTP session. Requests are derived from the metadata contained.<br/>
+The _metahttp.xml_ files are the basis of an HTTP session. Requests are _derived_ from the metadata contained.<br/>
 ### GET request example
 As a first simple example we create a _GET_ request against _http://www.eff.org_ <br/>
 <br/>
@@ -28,7 +32,7 @@ meta/eff.org.metahttp.xml:
       </req>
     </session>
 
-Now, in order to _compile_ this meta data to bash instructions, run the following command (requires _nc_ or _ncat_ on your system, _telnet_ will do too):<br/>
+Now, in order to _compile_ this meta data to bash instructions, run the following command (requires _nc_ or _ncat_ or _socat_ on your system, _telnet_ will do too):<br/>
 `cat meta/eff.org.metahttp.xml | nc localhost 50774`  
 which will generate the following output:  
 
@@ -46,8 +50,9 @@ which will generate the following output:
     --header 'Host: www.eff.org' \
     --header 'Content-Type: application/x-www-form-urlencoded' \
     $'https://www.eff.org/' \
-
-For now, we just copy and paste the wget command and its arguments (the 11 lines following wget) in order to kick off the HTTP request:
+    
+<br/>
+For now, we just copy and paste the wget command and its arguments (the 11 lines following wget (including the last empty line)) in order to kick off the HTTP request:
 
     wget \
     --server-response \
@@ -60,7 +65,8 @@ For now, we just copy and paste the wget command and its arguments (the 11 lines
     --header 'Host: www.eff.org' \
     --header 'Content-Type: application/x-www-form-urlencoded' \
     $'https://www.eff.org/' \
- 
+    
+
 ... and we receive the HTTP response, similar to the following:<br/>
 <sub>--2020-05-22 15:13:33--  https://www.eff.org/  
 Resolving www.eff.org (www.eff.org)... 151.101.112.201, 2a04:4e42:1b::201  
@@ -169,6 +175,8 @@ The contents of _duckduckgo.proxy.sh_ are:<br/>
     $'https://duckduckgo.com/html' \
 
 
+<sup>Note: Why do we explicitly tell this request to be _insecure_?<br/>
+    Under normal circumstances, we'd always want a TLS request to be as secure as possible. However, we're in a completely different _context_ here: We've put a proxy between us and the HTTPS server, in order to act as MITM. That means that we explicitly chose an insecure setup, with the proxy exchanging the actual target site certificate with its own (Portswigger) one.</sup><br/>
 We make the file executable and run it: `chmod +x duckduckgo.proxy.sh && ./duckduckgo.proxy.sh`<br/>
 ... which results in the output of the HTTP response - not only in our terminal, but also in Burpsuite proxy.<br/>
 We can even conveniently view the rendered web page on the proxy's response tab:<br/>
