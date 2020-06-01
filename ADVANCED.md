@@ -43,7 +43,7 @@ Here is the content of _meta/hackthebox.metahttp.xml_:<br/>
         </req>
     </session>
 
-We give it a shot with `cat meta/hackthebox.metahttp.xml | nc localhost 50774`<br/>
+We give it a shot with `cat meta/hackthebox.metahttp.xml | ./metahttp.sh`<br/>
 
     #!/bin/bash
     rm -f cookies.txt; touch cookies.txt
@@ -236,7 +236,7 @@ With the responses of the first 2 requests, we have gained some information with
             </form>
         </req>
     </session>
-Let's compile it: `cat meta/hackthebox.metahttp.xml | nc localhost 50774`<br/>
+Let's compile it: `cat meta/hackthebox.metahttp.xml | ./metahttp.sh`<br/>
 
     _(we have truncated the first 2 requests here)_
     echo ------------------------------------------------------------ curl POST 'https://www.hackthebox.eu/invite' : 
@@ -397,7 +397,7 @@ Before you get confused or turned off, here's the good news: We will mostly use 
 Things will get clearer once we play around with the _metahttp_ _wfuzz_ session.<br/>
 
 ## 1st request     
-We compile the metadata: `cat meta/hackthebox.wfuzz.metahttp.xml | nc localhost 50774`<br/>
+We compile the metadata: `cat meta/hackthebox.wfuzz.metahttp.xml | ./metahttp.sh`<br/>
 
     #!/bin/bash
     rm -f WFUZZP?
@@ -517,7 +517,7 @@ In order to run it, we copy and paste the lines up to (and including) the 1st re
     Filtered Requests: 0
     Requests/sec.: 1.070871
     
-As opposed to _curl_ or _wget_, _wfuzz_ only return a summary of the response to stdout.<br/>
+As opposed to _curl_ or _wget_, _wfuzz_ only returns a summary of the response to stdout.<br/>
 ### Introspection
 There are 2 possibilities to view the details of the HTTP response:<br/>
 - _Burpsuite_: The Proxy / HTTP-History tab will show you all details of each request that went through the proxy (even rendered HTML)
