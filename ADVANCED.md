@@ -366,7 +366,6 @@ Here is the content of our new session file _meta/hackthebox.wfuzz.metahttp.xml_
             <cookie name="__cfduid" value="FUZZ[r.cookies.response.__cfduid]"/>
             <cookie name="hackthebox_session" value="FUZZ[r.cookies.response.hackthebox_session]"/>
             <cookie name="XSRF-TOKEN" value="FUZZ[r.cookies.response.XSRF-TOKEN]"/>
-            <!--<payload type="wfuzzp" fn="WFUZZP1" field="history.content|gregex('.*name=.csrf-token. content=.([^>]*).>.*')"/>--> 
             <payload type="wfuzzp" fn="WFUZZP1" field="history.content|gregex('.*input [^>]*name=._token. [^>]*value=.([^>]+).>.*')"/> 
             <!-- Note: payload 'decoder' attribute only supported with wfuzzp payload and existing 'field' attribute" --> 
             <payload type="wfuzzp" fn="WFUZZP2" field="history.content|gregex('.*.code.:.([^,]*).,.*')" decoder="base64" description="FUZZ: read results of the 2nd request"/>
@@ -441,8 +440,8 @@ We compile the metadata: `cat meta/hackthebox.wfuzz.metahttp.xml | ./metahttp.sh
     -p 127.0.0.1:8080 \
     -c \
     -z 'wfuzzp,WFUZZP1' \
-    -z file,`f=$(mktemp); wfpayload.py -z 'wfuzzp,WFUZZP1' --field "history.content|gregex('.*input [^>]*name=._token. [^>]*value=.([^>]+).>.*')" | grep -vE "^$|^Warning:">$f; echo -n $f` \
-    -z file,`f=$(mktemp); wfpayload.py -z 'wfuzzp,WFUZZP2' --field "history.content|gregex('.*.code.:.([^,]*).,.*')" | grep -vE "^$|^Warning:" | base64 --decode>$f; echo -n $f` \
+    -z file,`f=$(mktemp); python3 -c 'from wfuzz.wfuzz import main_filter; main_filter()' -z 'wfuzzp,WFUZZP1' --field "history.content|gregex('.*input [^>]*name=._token. [^>]*value=.([^>]+).>.*')" | grep -vE "^$|^Warning:">$f; echo -n $f` \
+    -z file,`f=$(mktemp); python3 -c 'from wfuzz.wfuzz import main_filter; main_filter()' -z 'wfuzzp,WFUZZP2' --field "history.content|gregex('.*.code.:.([^,]*).,.*')" | grep -vE "^$|^Warning:" | xargs python3 -c 'from wfuzz.wfuzz import main_encoder; main_encoder()' -d base64 | grep -vE "^$|^Warning:">$f; echo -n $f` \
     -X POST \
     -H 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
     -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
@@ -526,7 +525,7 @@ Time to explain the latter concept: You might have noticed the command line argu
 A `WFUZZP1` file has been created in the current directory. That file is (kind of) comparable to the cookies.txt file that _curl_ created in the previous session, however it contains much more:<br/>
 It basically contains an object representation of each and every component involved in the associated HTTP request/response. You may regard it as a little database of HTTP protocol components.<br/>
 How do we query this database? _wfpayload.py_ is the answer.<br/>
-<sub>Note: If you have _wfuzz_ installed on your system, however your installation lacks the _wfpayload.py_ script (we have seen that on the kali 2020.1 release), just copy the _src/wfpayload.py_ of this repository (or the original from https://github.com/xmendez/wfuzz/src) into your $PATH and make the file executable.<sup>
+<sub>Note: If you have _wfuzz_ installed on your system, however your installation lacks the _wfpayload.py_ script (we have seen that on the kali 2020.1 release), either copy the _src/wfpayload.py_ of this repository (or the original from https://github.com/xmendez/wfuzz/src) into your $PATH and make the file executable, or use `python3 -c 'from wfuzz.wfuzz import main_filter; main_filter()'` instead of `wfpayload.py`.<sup>
 
 Now, let's look at the value of a response cookie contained in WFUZZP1 with<br/>
 `wfpayload.py -z 'wfuzzp,WFUZZP1' --field 'r.cookies.response.XSRF-TOKEN'`
@@ -535,7 +534,7 @@ Now, let's look at the value of a response cookie contained in WFUZZP1 with<br/>
     eyJpdiI6InVienM3UWFWMVd6ZG5mSFZyTUVwdWc9PSIsInZhbHVlIjoiT2UwRXp1Y2VhSzRya0ZPOG5oMnBOQnJRR1NGd1ZGTStCakF2RmQ1YVwvZU0zZm54STVMdXFzaFR1Zmp4cEdzK1oiLCJtYWMiOiIzYzE5MmM0OTI0ZTJlNjVlMmM3MGQxZTc4ZDAwOGQwYjk1NDFhNTUxY2ZmOGI1YTRiOTMxNDc2MWRlNzQ2ZmRhIn0%3D
     
 Let's look at the content of the HTTP response contained in WFUZZP1 with<br/>
-`wfpayload.py -z 'wfuzzp,WFUZZP1' --field "history.content"`
+`python3 -c 'from wfuzz.wfuzz import main_filter; main_filter()' -z 'wfuzzp,WFUZZP1' --field "history.content"`
 
     Warning: Pycurl is not compiled against Openssl. Wfuzz might not work correctly when fuzzing SSL sites. Check Wfuzz's documentation for more information.
     
@@ -618,8 +617,8 @@ Below, you see how _metahttp_ integrates the _wfpayload.py_ call into the _wfuzz
     > -p 127.0.0.1:8080 \
     > -c \
     > -z 'wfuzzp,WFUZZP1' \
-    > -z file,`f=$(mktemp); wfpayload.py -z 'wfuzzp,WFUZZP1' --field "history.content|gregex('.*input [^>]*name=._token. [^>]*value=.([^>]+).>.*')" | grep -vE "^$|^Warning:">$f; echo -n $f` \
-    > -z file,`f=$(mktemp); wfpayload.py -z 'wfuzzp,WFUZZP2' --field "history.content|gregex('.*.code.:.([^,]*).,.*')" | grep -vE "^$|^Warning:" | base64 --decode>$f; echo -n $f` \
+    > -z file,`f=$(mktemp); python3 -c 'from wfuzz.wfuzz import main_filter; main_filter()' -z 'wfuzzp,WFUZZP1' --field "history.content|gregex('.*input [^>]*name=._token. [^>]*value=.([^>]+).>.*')" | grep -vE "^$|^Warning:">$f; echo -n $f` \
+    > -z file,`f=$(mktemp); python3 -c 'from wfuzz.wfuzz import main_filter; main_filter()' -z 'wfuzzp,WFUZZP2' --field "history.content|gregex('.*.code.:.([^,]*).,.*')" | grep -vE "^$|^Warning:" | xargs python3 -c 'from wfuzz.wfuzz import main_encoder; main_encoder()' -d base64 | grep -vE "^$|^Warning:">$f; echo -n $f` \
     > -X POST \
     > -H 'User-Agent: Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0' \
     > -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8' \
