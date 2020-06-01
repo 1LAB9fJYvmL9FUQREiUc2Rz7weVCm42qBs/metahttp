@@ -8,7 +8,7 @@ The following example might contain spoilers - so stop reading if you intend to 
 The session that we are going to introduce here consists of 3 requests.<br/>
 Here is the content of _meta/hackthebox.metahttp.xml_:<br/>
 
-    <session newcookies="true" baseurl="https://www.hackthebox.eu" proxy="http://127.0.0.1:8080" stdout="-">
+    <session newcookies="true" baseurl="https://www.hackthebox.eu" proxy="http://127.0.0.1:8080" stdout="-" xmlns="urn:1LAB9fJYvmL9FUQREiUc2Rz7weVCm42qBs">
         <req tool="curl" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
             <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
             <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
@@ -329,7 +329,7 @@ During the course of the _curl_ session, manual work was required in terms of ed
 ## Metadata
 Here is the content of our new session file _meta/hackthebox.wfuzz.metahttp.xml_:
 
-    <session newcookies="true" baseurl="https://www.hackthebox.eu" proxy="http://127.0.0.1:8080" stdout="-">
+    <session newcookies="true" baseurl="https://www.hackthebox.eu" proxy="http://127.0.0.1:8080" stdout="-" xmlns="urn:1LAB9fJYvmL9FUQREiUc2Rz7weVCm42qBs">
         <req tool="wfuzz" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
             <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
             <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
