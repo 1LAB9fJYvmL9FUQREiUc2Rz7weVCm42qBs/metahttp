@@ -526,7 +526,7 @@ Time to explain the latter concept: You might have noticed the command line argu
 A `WFUZZP1` file has been created in the current directory. That file is (kind of) comparable to the cookies.txt file that _curl_ created in the previous session, however it contains much more:<br/>
 It basically contains an object representation of each and every component involved in the associated HTTP request/response. You may regard it as a little database of HTTP protocol components.<br/>
 How do we query this database? _wfpayload.py_ is the answer.<br/>
-<sub>Note: If you have wfuzz installed on your system, however your installation lacks the wfpayload.py script (we have seen that on the kali 2020.1 release), just copy the _src/wfpayload.py_ of this repository (or the original from https://github.com/xmendez/wfuzz/src) into your $PATH.<sup>
+<sub>Note: If you have _wfuzz_ installed on your system, however your installation lacks the _wfpayload.py_ script (we have seen that on the kali 2020.1 release), just copy the _src/wfpayload.py_ of this repository (or the original from https://github.com/xmendez/wfuzz/src) into your $PATH and make the file executable.<sup>
 
 Now, let's look at the value of a response cookie contained in WFUZZP1 with<br/>
 `wfpayload.py -z 'wfuzzp,WFUZZP1' --field 'r.cookies.response.XSRF-TOKEN'`
