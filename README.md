@@ -18,11 +18,11 @@ A tool agnostic wrapper around standard Linux tools that deal with the HTTP(S) p
 
 ## Metahttp usage
 ### metahttp.xml files
-The _metahttp.xml_ files are the basis of an HTTP session. Requests are _derived_ from the metadata contained.<br/>
+The _metahttp.xml_ files are the basis of an HTTP session. Requests are _derived_ from the contained metadata and integrated into bash scripts. The following examples assume that you have _wget_ or _curl_ installed.<br/>
 ### GET request example
 As a first simple example we create a _GET_ request against _http://www.eff.org_ <br/>
 <br/>
-meta/eff.org.metahttp.xml:  
+meta/eff.org.metahttp.xml:<br/>
 
     <session newcookies="true" baseurl="https://www.eff.org" stdout="-" xmlns="urn:1LAB9fJYvmL9FUQREiUc2Rz7weVCm42qBs">
       <req tool="wget" verbose="false">
@@ -33,7 +33,7 @@ meta/eff.org.metahttp.xml:
     </session>
 
 Now, in order to _compile_ this meta data to bash instructions, run the following command (requires _nc_ or _ncat_ or _socat_ on your system, _telnet_ will do too):<br/>
-`cat meta/eff.org.metahttp.xml | nc localhost 50774`  
+`cat meta/eff.org.metahttp.xml | ./metahttp.sh`  
 which will generate the following output:  
 
     #!/bin/bash
@@ -100,7 +100,7 @@ meta/duckduckgo.metahttp.xml:<br/>
     </session>
 
 Again, we _compile_ this metadata, this time redirecting the output to a bash script:<br/>
-`cat meta/duckduckgo.metahttp.xml | nc localhost 50774 >duckduckgo.sh`<br/>
+`cat meta/duckduckgo.metahttp.xml | ./metahttp.sh >duckduckgo.sh`<br/>
 This will result in the following file which you can make executable by issuing `chmod +x duckduckgo.sh`:<br/>
 
     #!/bin/bash
@@ -147,7 +147,7 @@ Our next request (_duckduckgo.proxy.metahttp.xml_) will utilize a Burpsuite prox
     </session>
 
 We transform the XML and save the output to file duckduckgo.proxy.sh<br/>
-`cat meta/duckduckgo.proxy.metahttp.xml | nc localhost 50774 >duckduckgo.proxy.sh`<br/>
+`cat meta/duckduckgo.proxy.metahttp.xml | ./metahttp.sh >duckduckgo.proxy.sh`<br/>
 The contents of _duckduckgo.proxy.sh_ are:<br/>
 
     #!/bin/bash
