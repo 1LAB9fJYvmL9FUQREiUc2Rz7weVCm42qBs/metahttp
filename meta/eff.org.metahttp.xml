@@ -1,4 +1,4 @@
-<session newcookies="true" baseurl="https://www.eff.org" stdout="-">
+<session newcookies="true" baseurl="https://www.eff.org" stdout="-" xmlns="urn:1LAB9fJYvmL9FUQREiUc2Rz7weVCm42qBs">
     <req tool="wget" verbose="false">
         <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
         <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
