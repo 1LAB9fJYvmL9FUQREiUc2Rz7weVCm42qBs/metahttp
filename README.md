@@ -180,6 +180,7 @@ The contents of _duckduckgo.proxy.sh_ are:<br/>
 We make the file executable and run it: `chmod +x duckduckgo.proxy.sh && ./duckduckgo.proxy.sh`<br/>
 ... which results in the output of the HTTP response - not only in our terminal, but also in Burpsuite proxy.<br/>
 We can even conveniently view the rendered web page on the proxy's response tab:<br/>
+<br/>
 ![BurpSuite Proxy](/images/burp-proxy-rendered-response1.png)
 <br/>
 <br>
