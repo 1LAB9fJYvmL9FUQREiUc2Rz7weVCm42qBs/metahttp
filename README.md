@@ -7,7 +7,7 @@ A tool agnostic wrapper around standard Linux tools that deal with the HTTP(S) p
 - Clone this repository:<br/>
   `git clone git@github.com:1LAB9fJYvmL9FUQREiUc2Rz7weVCm42qBs/metahttp.git`<br/>
 - With `dockerd` running, build the docker image from the _Dockerfile_:<br/>
-  `cd metahttp; docker build -t "ubuntu1604/socat/metahttp".`<br/>
+  `cd metahttp; docker build -t "ubuntu1604/socat/metahttp" .`<br/>
 - Run a container based on the image:<br/>
   `docker run --name=ubuntu1604-socat-metahttp --detach -it -p 127.0.0.1:50774:50774/tcp -p 127.0.0.1:50774:50774/udp ubuntu1604/socat/metahttp`
 - As a sanity check, see if your localhost now exposes ports 50774/tcp and 50774/udp:<br/>
@@ -24,7 +24,7 @@ As a first simple example we create a _GET_ request against _http://www.eff.org_
 <br/>
 meta/eff.org.metahttp.xml:  
 
-    <session newcookies="true" baseurl="https://www.eff.org" stdout="-">
+    <session newcookies="true" baseurl="https://www.eff.org" stdout="-" xmlns="urn:1LAB9fJYvmL9FUQREiUc2Rz7weVCm42qBs">
       <req tool="wget" verbose="false">
         <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
         <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
@@ -84,7 +84,7 @@ HTTP request sent, awaiting response...
 As a first example for a _POST_ request we chose the search platform _duckduckgo.com_, as it allows for a straightforward search without a lot of background noise:<br/>
 meta/duckduckgo.metahttp.xml:<br/>
 
-    <session newcookies="true" baseurl="https://duckduckgo.com" stdout="-">
+    <session newcookies="true" baseurl="https://duckduckgo.com" stdout="-" xmlns="urn:1LAB9fJYvmL9FUQREiUc2Rz7weVCm42qBs">
       <req tool="curl" protocol="http/1.1" verbose="false">
         <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
         <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
@@ -130,7 +130,7 @@ Again, when you run the bash script, you will see the complete HTTP response in 
 As pen testers, we like to use a proxy in order to position ourselves as MITM (man in the middle). This helps us analyze/repeat/modify requests in detail.<br/>
 Our next request (_duckduckgo.proxy.metahttp.xml_) will utilize a Burpsuite proxy on localhost port 8080:<br/>
 
-    <session newcookies="true" baseurl="https://duckduckgo.com" proxy="http://127.0.0.1:8080" stdout="-">
+    <session newcookies="true" baseurl="https://duckduckgo.com" proxy="http://127.0.0.1:8080" stdout="-" xmlns="urn:1LAB9fJYvmL9FUQREiUc2Rz7weVCm42qBs">
       <req tool="curl" insecure="true" protocol="http/1.1" verbose="false" useproxy="true">
         <header name="User-Agent" value="Mozilla/5.0 (Windows NT 6.1; rv:60.0) Gecko/20100101 Firefox/60.0"/>
         <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
