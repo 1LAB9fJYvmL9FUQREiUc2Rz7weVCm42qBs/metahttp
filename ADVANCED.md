@@ -226,7 +226,7 @@ With the responses of the first 2 requests, we have gained some information with
             <header name="Accept" value="text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"/>
             <header name="Accept-Language" value="en-US,en;q=0.5"/>
             <header name="Accept-Encoding" value="gzip, deflate"/>
-                <header name="Referer" value="https://www.hackthebox.eu/"/>
+            <header name="Referer" value="https://www.hackthebox.eu/"/>
             <header name="Connection" value="close"/>
             <header name="Pragma" value="no-cache"/>
             <header name="Cache-Control" value="no-cache"/>
@@ -476,7 +476,7 @@ We compile the metadata: `cat meta/hackthebox.wfuzz.metahttp.xml | ./metahttp.sh
     -H 'Content-Type: application/x-www-form-urlencoded' \
     $'https://www.hackthebox.eu/register' \
     
-In order to run it, we copy and paste the lines up to (and including) the 1st request:<br/>
+We _could_ run the whole script with all 4 requests in one shot, however for the sake of analysis, we'll run it step by step instead: We copy and paste the lines up to (and including) the 1st request:<br/>
 
     rm -f WFUZZP?
     echo ------------------------------------------------------------ wfuzz FUZZ 'https://www.hackthebox.eu/invite' : 
