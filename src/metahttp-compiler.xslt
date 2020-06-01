@@ -12,7 +12,8 @@
     <xsl:param name="crlf" select="concat($cr,$lf)"/>
     <xsl:param name="re">^(https?://)?([^/]+)?(/[^\?]*)(\?*.*)$</xsl:param>
     <xsl:param name="cookiefile">cookies.txt</xsl:param>
-    <xsl:param name="wfpayload">wfpayload.py</xsl:param>
+    <xsl:param name="wfpayload">python3 -c 'from wfuzz.wfuzz import main_filter; main_filter()'</xsl:param>
+    <xsl:param name="wfencode">python3 -c 'from wfuzz.wfuzz import main_encoder; main_encoder()'</xsl:param>
     <xsl:param name="boundary">A-----------------------------------affe</xsl:param>
 
     <xsl:template match="/session[not(child::req[@tool!='raw'])]" priority="3">
@@ -251,9 +252,10 @@
                     <xsl:value-of select="concat($sq,@type,',',@fn,$sq)"/>
                     <xsl:value-of select="concat(' --field &quot;',@field,'&quot;')"/>
                     <xsl:value-of select="' | grep -vE &quot;^$|^Warning:&quot;'"/>
-                    <xsl:value-of select="concat(' | ',@decoder,' --decode')[current()/attribute::decoder]"/>
+                    <xsl:value-of select="concat(' | xargs ',$wfencode,' -d ',@decoder)		[current()/attribute::decoder]"/>
+                    <xsl:value-of select="' | grep -vE &quot;^$|^Warning:&quot;'		[current()/attribute::decoder]"/>
                     <xsl:value-of select="'>$f; echo -n $f`'"/>						<!-- /backticks -->
-                    <xsl:value-of select="concat(','[current()/attribute::encoder],@encoder)"/>
+                    <xsl:value-of select="concat(',',@encoder)					[current()/attribute::encoder]"/>
                     <xsl:value-of select="concat(' --slice &quot;',@slice,'&quot;')    [current()/attribute::slice]"/>	<!-- slice code can contain single quotes -->
                 </xsl:when>
                 <xsl:otherwise>
